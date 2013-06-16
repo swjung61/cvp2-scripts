@@ -187,8 +187,7 @@ process_repo()
 num_ext_pkgs=${#external_packages[*]}
 for ((i=0; i<=$(($num_ext_pkgs-1)); i++))
 do
-	   echo "Passing up ${external_packages[i]} with args ${external_packages[++i]}"
-		#process_package "${external_packages[i]}" "${external_packages[++i]}"
+	process_package "${external_packages[i]}" "${external_packages[++i]}"
 done
 
 # Special cased valadoc via git
