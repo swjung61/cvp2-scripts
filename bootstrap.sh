@@ -12,6 +12,19 @@ env_file="${base_dir}/env_setup"
 remote_branch="origin/cablelabs/master"
 local_branch="local/master"
 
+prerequisite_packages=(
+"git"
+"g++"
+"bison"
+"flex"
+"python-dev"
+"gtk-doc-tools"
+"graphviz-dev"
+"graphviz"
+"libxml-parser-perl"
+"libdbus-1-dev"
+)
+
 external_packages=(
 "http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz" ""
 "http://ftp.gnu.org/gnu/automake/automake-1.13.1.tar.xz" ""
@@ -67,8 +80,6 @@ echo "" | tee ${log_file}
 
 # set up the destination directory
 echo "Working prefix is ${base_dir}" | tee -a ${log_file}
-echo "Make sure the toolchain dependancies are installed" | tee -a ${log_file}
-echo " (e.g. sudo apt-get install g++ bison flex git python-dev gtk-doc-tools graphviz-dev graphviz libxml-parser-perl libdbus-1-dev)" | tee -a ${log_file}
 
 if [ -z $CVP2_ROOT ]; then
 	echo "Enter the desired destination directory [default: ${base_dir}/root]:" | tee -a ${log_file}
@@ -84,7 +95,7 @@ echo "*** Destination directory: ${CVP2_ROOT}" | tee -a ${log_file}
 
 if [ ! -d ${CVP2_ROOT} ]; then
     mkdir -p ${CVP2_ROOT} 2>&1 | tee -a ${log_file} || bailout "Couldn't create ${CVP2_ROOT}"
-    chown ${USER} ${CVP2_ROOT} 2>&1 | tee -a ${log_file}
+#    chown ${USER} ${CVP2_ROOT} 2>&1 | tee -a ${log_file}
 fi
 
 if [ ! -d ${base_dir}/packages ];then
@@ -125,6 +136,20 @@ source ${env_file}
 
 # if this cache directory exists, it can cause problems
 rm -r -f  ~/.cache/g-ir-scanner
+
+declare -a missing_packages=()
+
+for i in "${prerequisite_packages[@]}"
+do
+   dpkg -s "$i" >/dev/null 2>&1 || missing_packages+=($i)
+done
+
+if [ "${#missing_packages[@]}" -gt "0" ]; then
+	echo "" | tee -a ${log_file}
+	echo "Missing prereqs run the following and try again." | tee -a ${log_file}
+	echo "sudo apt-get install ${missing_packages[@]}" | tee -a ${log_file}
+        exit 1
+fi
 
 process_package()
 {
