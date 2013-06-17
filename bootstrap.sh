@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+
 # To deal with the tees...
 set -o pipefail
 
@@ -68,7 +68,7 @@ echo "" | tee ${log_file}
 # set up the destination directory
 echo "Working prefix is ${base_dir}" | tee -a ${log_file}
 echo "Make sure the toolchain dependancies are installed" | tee -a ${log_file}
-echo " (e.g. sudo apt-get install g++ bison flex git python-dev gtk-doc-tools graphviz-dev graphviz libxml-parser-perl libdbus-dev)" | tee -a ${log_file}
+echo " (e.g. sudo apt-get install g++ bison flex git python-dev gtk-doc-tools graphviz-dev graphviz libxml-parser-perl libdbus-1-dev)" | tee -a ${log_file}
 
 if [ -z $CVP2_ROOT ]; then
 	echo "Enter the desired destination directory [default: ${base_dir}/root]:" | tee -a ${log_file}
