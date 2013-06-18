@@ -3,12 +3,7 @@
 # To deal with the tees...
 set -o pipefail
 
-base_dir=~/cvp2
-git_dir=~/git
-
-log_file="${base_dir}/build_log.txt"
-env_file="${base_dir}/env_setup"
-
+default_build=~/cvp2
 remote_branch="origin/cablelabs/master"
 local_branch="local/master"
 
@@ -75,40 +70,80 @@ bailout()
     exit 1
 }
 
-# clear the log file
-echo "" | tee ${log_file}
+# Check for prerequisite toolchain packages
+declare -a missing_packages=()
 
-# set up the destination directory
-echo "Working prefix is ${base_dir}" | tee -a ${log_file}
+for i in "${prerequisite_packages[@]}"
+do
+   dpkg -s "$i" >/dev/null 2>&1 || missing_packages+=($i)
+done
+
+if [ "${#missing_packages[@]}" -gt "0" ]; then
+	echo "" | tee -a ${log_file}
+	echo "Missing prereqs run the following and try again." | tee -a ${log_file}
+	echo "sudo apt-get install ${missing_packages[@]}" | tee -a ${log_file}
+        exit 1
+fi
+
+# Setup directories if not defined in the environment
+if [ -z $CVP2_BUILD ]; then
+	echo "Enter the desired build directory [default: ${default_build}]:"
+	read destDir
+	if [ -n "$destDir" ]; then
+    	CVP2_BUILD="$destDir"
+   else
+      CVP2_BUILD="$default_build"
+   fi
+fi
 
 if [ -z $CVP2_ROOT ]; then
-	echo "Enter the desired destination directory [default: ${base_dir}/root]:" | tee -a ${log_file}
+	echo "Enter the desired installation directory [default: ${CVP2_BUILD}/root]:"
 	read destDir
 	if [ -n "$destDir" ]; then
     	CVP2_ROOT="$destDir"
    else
-		CVP2_ROOT="${base_dir}/root"
+		CVP2_ROOT="${CVP2_BUILD}/root"
 	fi
 fi
 
-echo "*** Destination directory: ${CVP2_ROOT}" | tee -a ${log_file}
+if [ -z $CVP2_GIT ]; then
+	echo "Enter the desired git directory [default: ${CVP2_BUILD}/git]:"
+	read destDir
+	if [ -n "$destDir" ]; then
+    	CVP2_GIT="$destDir"
+   else
+		CVP2_GIT="${CVP2_BUILD}/git"
+	fi
+fi
+
+# Setup build directory
+if [ ! -d ${CVP2_BUILD} ]; then
+	mkdir -p ${CVP2_BUILD} || bailout "Couldn't create ${CVP2_BUILD}"
+fi
+
+# Setup logging and environment files
+log_file="${CVP2_BUILD}/build_log.txt"
+env_file="${CVP2_BUILD}/env_setup"
+
+# clear the log file
+echo "" | tee ${log_file}
+echo "*** Install directory: ${CVP2_ROOT}" | tee -a ${log_file}
 
 if [ ! -d ${CVP2_ROOT} ]; then
     mkdir -p ${CVP2_ROOT} || bailout "Couldn't create ${CVP2_ROOT}"
 fi
 
-if [ ! -d ${base_dir}/packages ];then
-    mkdir ${base_dir}/packages || bailout "Couldn't create packages directory"
+if [ ! -d ${CVP2_BUILD}/packages ];then
+    mkdir -p ${CVP2_BUILD}/packages || bailout "Couldn't create packages directory"
 fi
 
-if [ ! -d ${base_dir}/src ];then
-    mkdir ${base_dir}/src || bailout "Couldn't create src directory"
+if [ ! -d ${CVP2_BUILD}/src ];then
+    mkdir -p ${CVP2_BUILD}/src || bailout "Couldn't create src directory"
 fi
 
-if [ ! -d ${git_dir} ];then
-	mkdir ${git_dir} || bailout "Couldn't create ${git_dir} directory"
+if [ ! -d ${CVP2_GIT} ];then
+	mkdir -p ${CVP2_GIT} || bailout "Couldn't create ${CVP2_GIT} directory"
 fi
-
 
 # additional configure options
 shared_config_opts="--prefix=${CVP2_ROOT}"
@@ -117,8 +152,10 @@ echo "*** Exporting environment variables..." | tee -a ${log_file}
 
 # using custom prefix
 cat > ${env_file} << EndOfFile
+export CVP2_BUILD="${CVP2_BUILD}"
 export CVP2_ROOT="${CVP2_ROOT}"
-export RYGELDEV_BASE="${base_dir}"
+export CVP2_GIT="${CVP2_GIT}"
+export RYGELDEV_BASE="${CVP2_BUILD}"
 export RYGELDEV_INSTALL="${CVP2_ROOT}"
 export ACLOCAL_FLAGS="-I /usr/share/aclocal"
 export CFLAGS="-I${CVP2_ROOT}/include"
@@ -140,20 +177,6 @@ source ${env_file}
 # if this cache directory exists, it can cause problems
 rm -r -f  ~/.cache/g-ir-scanner
 
-declare -a missing_packages=()
-
-for i in "${prerequisite_packages[@]}"
-do
-   dpkg -s "$i" >/dev/null 2>&1 || missing_packages+=($i)
-done
-
-if [ "${#missing_packages[@]}" -gt "0" ]; then
-	echo "" | tee -a ${log_file}
-	echo "Missing prereqs run the following and try again." | tee -a ${log_file}
-	echo "sudo apt-get install ${missing_packages[@]}" | tee -a ${log_file}
-        exit 1
-fi
-
 process_package()
 {
     local package_url="$1"
@@ -163,7 +186,7 @@ process_package()
 		
     echo "*** Installing ${package_base}..." 2>&1 | tee -a ${log_file}
 
-    cd ${base_dir} || bailout "Couldn't cd to ${base_dir}"
+    cd ${CVP2_BUILD} || bailout "Couldn't cd to ${CVP2_BUILD}"
 
     if [ ! -f packages/${package_filename} ]; then
         echo "*** Fetching source package ${package_filename}..." 2>&1 | tee -a ${log_file}
@@ -198,7 +221,7 @@ process_repo()
  	local repo_base=$(basename ${repo_url} .git)
 
 	echo "*** Installing ${repo_base}..." 2>&1 | tee -a ${log_file}
-	cd ${git_dir} || bailout "Couldn't cd to ${git_dir}"
+	cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
 	git clone ${repo_url} | tee -a ${log_file} || bailout "Couldn't clone ${repo_base}"
 	cd ${repo_base} || bailout "Couldn't cd to ${repo_base} directory"
 	git checkout -b ${local_branch} ${remote_branch}
@@ -220,7 +243,7 @@ done
 
 # Special cased valadoc via git
 echo "*** Getting valadoc for 2013-03-19" | tee -a ${log_file}
-cd ${git_dir} || bailout "Couldn't cd to ${git_dir}"
+cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
 git clone git://git.gnome.org/valadoc valadoc-20130319 | tee -a ${log_file} || bailout "Couldn't clone valadoc"
 cd valadoc-20130319 || bailout "Couldn't cd to valadoc-20130319 directory"
 git checkout 5dde44de84cc90ad8f8fe554deaa64597e54ab64 || bailout "Couldn't switch to valadoc for 20130319"
@@ -239,11 +262,11 @@ do
 		process_repo "${cablelabs_repos[i]}" "${cablelabs_repos[++i]}"
 done
 
-# Build XDMR
-cd ${git_dir} || bailout "Couldn't cd to ${git_dir}"
+# Custom build for XDMR
+cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
 git clone git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git || tee -a ${log_file} || bailout "Couldn't clone valadoc"
 cd cvp2-xdmr-controller || bailout "Couldn't cd to the xdmr directory"
-./build_lib.sh
+./build_lib.sh && cp dmp ${CVP2_ROOT}/bin
 
 echo "NOTE: Environment variables for this prefix can be set via 'source ${env_file}'" | tee -a ${log_file}
 echo "Done." | tee -a ${log_file}
