@@ -94,8 +94,7 @@ fi
 echo "*** Destination directory: ${CVP2_ROOT}" | tee -a ${log_file}
 
 if [ ! -d ${CVP2_ROOT} ]; then
-    mkdir -p ${CVP2_ROOT} 2>&1 | tee -a ${log_file} || bailout "Couldn't create ${CVP2_ROOT}"
-#    chown ${USER} ${CVP2_ROOT} 2>&1 | tee -a ${log_file}
+    mkdir -p ${CVP2_ROOT} 2>&1 || bailout "Couldn't create ${CVP2_ROOT}"
 fi
 
 if [ ! -d ${base_dir}/packages ];then
@@ -104,6 +103,10 @@ fi
 
 if [ ! -d ${base_dir}/src ];then
     mkdir ${base_dir}/src || bailout "Couldn't create src directory"
+fi
+
+if [ ! -d ${git_dir} ];then
+	mkdir ${git_dir} || bailout "Couldn't create ${git_dir} directory"
 fi
 
 
