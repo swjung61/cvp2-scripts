@@ -94,7 +94,7 @@ fi
 echo "*** Destination directory: ${CVP2_ROOT}" | tee -a ${log_file}
 
 if [ ! -d ${CVP2_ROOT} ]; then
-    mkdir -p ${CVP2_ROOT} 2>&1 || bailout "Couldn't create ${CVP2_ROOT}"
+    mkdir -p ${CVP2_ROOT} || bailout "Couldn't create ${CVP2_ROOT}"
 fi
 
 if [ ! -d ${base_dir}/packages ];then
