@@ -29,7 +29,7 @@ external_packages=(
 "http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz" ""
 "https://www.kernel.org/pub/linux/utils/util-linux/v2.23/util-linux-2.23.tar.xz" "--without-ncurses --disable-use-tty-group"
 "http://ftp.gnu.org/pub/gnu/libtool/libtool-2.4.2.tar.xz" ""
-"http://www.sqlite.org/2013/sqlite-autoconf-3071602.tar.gz" ""
+"http://www.sqlite.org/2013/sqvlite-autoconf-3071602.tar.gz" ""
 "http://xmlsoft.org/sources/libxml2-sources-2.7.8.tar.gz" ""
 "http://ftp.gnu.org/gnu/gmp/gmp-5.1.1.tar.xz" "ABI=32"
 "http://www.lysator.liu.se/~nisse/archive/nettle-2.7.tar.gz" ""
@@ -42,14 +42,19 @@ external_packages=(
 "http://ftp.gnome.org/pub/GNOME/sources/glib-networking/2.37/glib-networking-2.37.1.tar.xz" ""
 "http://ftp.gnome.org/pub/GNOME/sources/libsoup/2.43/libsoup-2.43.1.tar.xz" "--enable-introspection"
 "http://ftp.gnome.org/pub/GNOME/sources/gupnp-vala/0.10/gupnp-vala-0.10.5.tar.xz" ""
-"http://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.0.7.tar.xz" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-1.0.7.tar.xz" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-1.0.7.tar.xz" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-1.0.7.tar.xz" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "http://ftp.gnome.org/pub/GNOME/sources/libgee/0.8/libgee-0.8.6.tar.xz" "--enable-introspection"
 )
 
-cablelabs_repos=(
+gstreamer_repos=(
+"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-base.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-good.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-bad.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-ugly.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+)
+
+cvp2_repos=(
 "git@bitbucket.org:cvp2ri/gssdp.git" "--enable-introspection --without-gtk"
 "git@bitbucket.org:cvp2ri/gupnp.git" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git" "--enable-introspection"
@@ -255,11 +260,18 @@ echo "*** Starting build for valadoc" | tee -a ${log_file}
 make 2>&1 | tee -a ${log_file} || bailout "Couldn't make valadoc"
 make install 2>&1 | tee -a ${log_file} || bailout "Couldn't install valadoc"
 
-# CableLabs controlled repositories
-num_cl_repos=${#cablelabs_repos[*]}
-for ((i=0; i<=$(($num_cl_repos-1)); i++))
+# Gstreamer repositories
+num_gst_repos=${#gstreamer_repos[*]}
+for ((i=0; i<=$(($num_gst_repos-1)); i++))
 do
-		process_repo "${cablelabs_repos[i]}" "${cablelabs_repos[++i]}"
+		process_repo "${gstreamer_repos[i]}" "${gstreamer_repos[++i]}"
+done
+
+# CVP2 controlled repositories
+num_cvp2_repos=${#cvp2_repos[*]}
+for ((i=0; i<=$(($num_cvp2_repos-1)); i++))
+do
+		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}"
 done
 
 # Custom build for XDMR
