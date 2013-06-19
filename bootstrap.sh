@@ -18,6 +18,8 @@ prerequisite_packages=(
 "graphviz"
 "libxml-parser-perl"
 "libdbus-1-dev"
+"yasm"
+"cvs"
 )
 
 external_packages=(
