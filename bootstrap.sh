@@ -4,8 +4,6 @@
 set -o pipefail
 
 default_build=~/cvp2
-remote_branch="origin/cablelabs/master"
-local_branch="local/master"
 
 prerequisite_packages=(
 "git"
@@ -48,24 +46,24 @@ external_packages=(
 )
 
 gstreamer_repos=(
-"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-base.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-good.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-bad.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-ugly.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-base.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-good.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:ruihri/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 )
 
 cvp2_repos=(
-"git@bitbucket.org:cvp2ri/gssdp.git" "--enable-introspection --without-gtk"
-"git@bitbucket.org:cvp2ri/gupnp.git" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-av.git" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-dlna.git" "--enable-introspection --enable-gstreamer-metadata-backend"
-"git@bitbucket.org:cvp2ri/rygel.git" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
-"git@bitbucket.org:cvp2ri/dleyna-core.git" ""
-"git@bitbucket.org:cvp2ri/dleyna-server.git" ""
-"git@bitbucket.org:cvp2ri/dleyna-renderer.git" ""
-"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" ""
+"git@bitbucket.org:cvp2ri/gssdp.git" "" "--enable-introspection --without-gtk"
+"git@bitbucket.org:cvp2ri/gupnp.git" "" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp-dlna.git" "" "--enable-introspection --enable-gstreamer-metadata-backend"
+"git@bitbucket.org:cvp2ri/rygel.git" "cablelabs/master" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
+"git@bitbucket.org:cvp2ri/dleyna-core.git" "cablelabs/master" ""
+"git@bitbucket.org:cvp2ri/dleyna-server.git" "cablelabs/master" ""
+"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cablelabs/master" ""
+"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cablelabs/master" ""
 )
 
 bailout()
@@ -224,14 +222,15 @@ process_repo()
 	echo "*** Processing Repository: ${1}" 2>&1 | tee -a ${log_file}
 
 	local repo_url="$1"
-	local repo_opts="$2"
+	local repo_branch="$2"
+	local repo_opts="$3"
  	local repo_base=$(basename ${repo_url} .git)
 
 	echo "*** Installing ${repo_base}..." 2>&1 | tee -a ${log_file}
 	cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
 	git clone ${repo_url} | tee -a ${log_file} || bailout "Couldn't clone ${repo_base}"
 	cd ${repo_base} || bailout "Couldn't cd to ${repo_base} directory"
-	git checkout -b ${local_branch} ${remote_branch}
+	git checkout ${repo_branch}
 	
 	echo "*** Running autogen for ${repo_base}" | tee -a ${log_file}
 	./autogen.sh ${shared_config_opts} ${repo_opts} | tee -a ${log_file} || bailout "Couldn't autogen ${repo_base}"
@@ -266,14 +265,14 @@ make install 2>&1 | tee -a ${log_file} || bailout "Couldn't install valadoc"
 num_gst_repos=${#gstreamer_repos[*]}
 for ((i=0; i<=$(($num_gst_repos-1)); i++))
 do
-		process_repo "${gstreamer_repos[i]}" "${gstreamer_repos[++i]}"
+		process_repo "${gstreamer_repos[i]}" "${gstreamer_repos[++i]}" "${gstreamer_repos[++i]}"
 done
 
 # CVP2 controlled repositories
 num_cvp2_repos=${#cvp2_repos[*]}
 for ((i=0; i<=$(($num_cvp2_repos-1)); i++))
 do
-		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}"
+		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}" "${cvp2_repos[++i]}"
 done
 
 # Custom build for XDMR
