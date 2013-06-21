@@ -27,7 +27,7 @@ external_packages=(
 "ftp://sourceware.org/pub/libffi/libffi-3.0.13.tar.gz" ""
 "http://ftp.gnome.org/pub/GNOME/sources/glib/2.36/glib-2.36.3.tar.xz" ""
 "http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz" ""
-"https://www.kernel.org/pub/linux/utils/util-linux/v2.23/util-linux-2.23.tar.xz" "--without-ncurses --disable-use-tty-group"
+"https://www.kernel.org/pub/linux/utils/util-linux/v2.23/util-linux-2.23.tar.xz" "--without-ncurses --disable-use-tty-group --disable-bash-completion"
 "http://ftp.gnu.org/pub/gnu/libtool/libtool-2.4.2.tar.xz" ""
 "http://www.sqlite.org/2013/sqlite-autoconf-3071602.tar.gz" ""
 "http://xmlsoft.org/sources/libxml2-sources-2.7.8.tar.gz" ""
@@ -45,16 +45,13 @@ external_packages=(
 "http://ftp.gnome.org/pub/GNOME/sources/libgee/0.8/libgee-0.8.6.tar.xz" "--enable-introspection"
 )
 
-gstreamer_repos=(
-"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-base.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-good.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:ruihri/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-)
-
 cvp2_repos=(
+"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-base.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-good.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@bitbucket.org:cvp2ri/gssdp.git" "" "--enable-introspection --without-gtk"
 "git@bitbucket.org:cvp2ri/gupnp.git" "" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
@@ -260,13 +257,6 @@ echo "*** Running autogen for valadoc" | tee -a ${log_file}
 echo "*** Starting build for valadoc" | tee -a ${log_file}
 make 2>&1 | tee -a ${log_file} || bailout "Couldn't make valadoc"
 make install 2>&1 | tee -a ${log_file} || bailout "Couldn't install valadoc"
-
-# Gstreamer repositories
-num_gst_repos=${#gstreamer_repos[*]}
-for ((i=0; i<=$(($num_gst_repos-1)); i++))
-do
-		process_repo "${gstreamer_repos[i]}" "${gstreamer_repos[++i]}" "${gstreamer_repos[++i]}"
-done
 
 # CVP2 controlled repositories
 num_cvp2_repos=${#cvp2_repos[*]}
