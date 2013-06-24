@@ -52,6 +52,7 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git://git.gnome.org/valadoc" "5dde44de8" ""
 "git@bitbucket.org:cvp2ri/gssdp.git" "" "--enable-introspection --without-gtk"
 "git@bitbucket.org:cvp2ri/gupnp.git" "" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
@@ -243,20 +244,6 @@ for ((i=0; i<=$(($num_ext_pkgs-1)); i++))
 do
 	process_package "${external_packages[i]}" "${external_packages[++i]}"
 done
-
-# Special cased valadoc via git
-echo "*** Getting valadoc for 2013-03-19" | tee -a ${log_file}
-cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
-git clone git://git.gnome.org/valadoc valadoc-20130319 | tee -a ${log_file} || bailout "Couldn't clone valadoc"
-cd valadoc-20130319 || bailout "Couldn't cd to valadoc-20130319 directory"
-git checkout 5dde44de84cc90ad8f8fe554deaa64597e54ab64 || bailout "Couldn't switch to valadoc for 20130319"
-
-echo "*** Running autogen for valadoc" | tee -a ${log_file}
-./autogen.sh ${shared_config_opts} | tee -a ${log_file} || bailout "Couldn't autogen valadoc"
-
-echo "*** Starting build for valadoc" | tee -a ${log_file}
-make 2>&1 | tee -a ${log_file} || bailout "Couldn't make valadoc"
-make install 2>&1 | tee -a ${log_file} || bailout "Couldn't install valadoc"
 
 # CVP2 controlled repositories
 num_cvp2_repos=${#cvp2_repos[*]}
