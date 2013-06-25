@@ -16,6 +16,8 @@ prerequisite_packages=(
 "graphviz"
 "libxml-parser-perl"
 "libdbus-1-dev"
+"libasound2-dev"
+"libx11-dev"
 "yasm"
 "cvs"
 )
