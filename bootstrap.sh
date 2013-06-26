@@ -60,10 +60,10 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-dlna.git" "" "--enable-introspection --enable-gstreamer-metadata-backend"
 "git@bitbucket.org:cvp2ri/rygel.git" "cablelabs/master" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
-"git@bitbucket.org:cvp2ri/dleyna-core.git" "cablelabs/master" ""
-"git@bitbucket.org:cvp2ri/dleyna-server.git" "cablelabs/master" "" "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cablelabs/master" "" "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cablelabs/master" ""
+"git@bitbucket.org:cvp2ri/dleyna-core.git" "cbl_master/plugfest35" ""
+"git@bitbucket.org:cvp2ri/dleyna-server.git" "cbl_master/plugfest35" "" "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cbl_master/plugfest35" "" "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cbl_master/plugfest35" ""
 )
 
 bailout()
