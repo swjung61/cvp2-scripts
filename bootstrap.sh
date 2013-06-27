@@ -45,6 +45,7 @@ external_packages=(
 "http://ftp.gnome.org/pub/GNOME/sources/libsoup/2.43/libsoup-2.43.1.tar.xz" "--enable-introspection"
 "http://ftp.gnome.org/pub/GNOME/sources/gupnp-vala/0.10/gupnp-vala-0.10.5.tar.xz" ""
 "http://ftp.gnome.org/pub/GNOME/sources/libgee/0.8/libgee-0.8.6.tar.xz" "--enable-introspection"
+"http://code.entropywave.com/download/orc/orc-0.4.17.tar.gz" ""
 )
 
 cvp2_repos=(
