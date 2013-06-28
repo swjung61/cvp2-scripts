@@ -45,6 +45,7 @@ external_packages=(
 "http://ftp.gnome.org/pub/GNOME/sources/libsoup/2.43/libsoup-2.43.1.tar.xz" "--enable-introspection"
 "http://ftp.gnome.org/pub/GNOME/sources/gupnp-vala/0.10/gupnp-vala-0.10.5.tar.xz" ""
 "http://ftp.gnome.org/pub/GNOME/sources/libgee/0.8/libgee-0.8.6.tar.xz" "--enable-introspection"
+"http://code.entropywave.com/download/orc/orc-0.4.17.tar.gz" ""
 )
 
 cvp2_repos=(
@@ -59,11 +60,11 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/gupnp.git" "" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-dlna.git" "" "--enable-introspection --enable-gstreamer-metadata-backend"
-"git@bitbucket.org:cvp2ri/rygel.git" "cbl_master/plugfest35" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
-"git@bitbucket.org:cvp2ri/dleyna-core.git" "cbl_master/plugfest35" ""
-"git@bitbucket.org:cvp2ri/dleyna-server.git" "cbl_master/plugfest35"  "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cbl_master/plugfest35"  "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cbl_master/plugfest35" ""
+"git@bitbucket.org:cvp2ri/rygel.git" "cablelabs/master" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
+"git@bitbucket.org:cvp2ri/dleyna-core.git" "cablelabs/master" ""
+"git@bitbucket.org:cvp2ri/dleyna-server.git" "cablelabs/master"  "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cablelabs/master"  "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cablelabs/master" ""
 )
 
 bailout()
