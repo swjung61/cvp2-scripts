@@ -258,6 +258,7 @@ done
 cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
 git clone git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git || tee -a ${log_file} || bailout "Couldn't clone valadoc"
 cd cvp2-xdmr-controller || bailout "Couldn't cd to the xdmr directory"
+git checkout cbl_master/plugfest35
 ./build_lib.sh && cp dmp ${CVP2_ROOT}/bin
 
 echo "NOTE: Environment variables for this prefix can be set via 'source ${env_file}'" | tee -a ${log_file}
