@@ -5,6 +5,8 @@ set -o pipefail
 
 default_build=~/cvp2
 
+default_branch=cablelabs/master
+
 prerequisite_packages=(
 "git"
 "g++"
@@ -50,21 +52,23 @@ external_packages=(
 
 cvp2_repos=(
 "http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-base.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-good.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-base.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-good.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-bad.git"        "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-cl-dtcp.git"    "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-cl-dlnasrc.git" "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git://git.gnome.org/valadoc" "5dde44de8" ""
-"git@bitbucket.org:cvp2ri/gssdp.git" "" "--enable-introspection --without-gtk"
-"git@bitbucket.org:cvp2ri/gupnp.git" "" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-dlna.git" "" "--enable-introspection --enable-gstreamer-metadata-backend"
-"git@bitbucket.org:cvp2ri/rygel.git" "cablelabs/master" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
-"git@bitbucket.org:cvp2ri/dleyna-core.git" "cablelabs/master" ""
-"git@bitbucket.org:cvp2ri/dleyna-server.git" "cablelabs/master"  "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cablelabs/master"  "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cablelabs/master" ""
+"git://git.gnome.org/valadoc"                         "5dde44de8" ""
+"git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
+"git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
+"git@bitbucket.org:cvp2ri/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
+"git@bitbucket.org:cvp2ri/dleyna-core.git"            "$default_branch" ""
+"git@bitbucket.org:cvp2ri/dleyna-server.git"          "$default_branch" "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git"  "$default_branch" ""
 )
 
 bailout()
