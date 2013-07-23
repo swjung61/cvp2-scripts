@@ -5,7 +5,7 @@ set -o pipefail
 
 default_build=~/cvp2
 
-default_branch=cablelabs/master
+default_branch=cbl_master/plugfest36
 
 prerequisite_packages=(
 "git"
