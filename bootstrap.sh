@@ -51,14 +51,12 @@ external_packages=(
 )
 
 cvp2_repos=(
-"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-base.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-good.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-bad.git"        "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-cl-dtcp.git"    "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-cl-dlnasrc.git" "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "2f78e96299" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-base.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-good.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "5736513eb0" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git://git.gnome.org/valadoc"                         "5dde44de8" ""
 "git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
 "git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
