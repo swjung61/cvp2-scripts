@@ -51,12 +51,12 @@ external_packages=(
 )
 
 cvp2_repos=(
-"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "2f78e96299" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-base.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-good.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "cbl_master/plugfest35" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "5736513eb0" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-base.git" "cbl_master/plugfest36" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-good.git" "cbl_master/plugfest36" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "cbl_master/plugfest36" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "cbl_master/plugfest36" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git://git.gnome.org/valadoc"                         "5dde44de8" ""
 "git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
 "git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
@@ -262,6 +262,20 @@ cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
 git clone git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git || tee -a ${log_file} || bailout "Couldn't clone valadoc"
 cd cvp2-xdmr-controller || bailout "Couldn't cd to the xdmr directory"
 ./build_lib.sh && cp dmp ${CVP2_ROOT}/bin
+
+# Script for DMS
+cat > ${CVP2_ROOT}/bin/dms << EndOfFile
+#!/bin/bash
+${CVP2_ROOT}/bin/rygel --disable-plugin Playbin \$@
+EndOfFile
+chmod 775 ${CVP2_ROOT}/bin/dms
+
+# Script for DMR
+cat > ${CVP2_ROOT}/bin/dmr << EndOfFile
+#!/bin/bash
+${CVP2_ROOT}/bin/rygel --disable-plugin MediaExport \$@
+EndOfFile
+chmod 775 ${CVP2_ROOT}/bin/dmr
 
 echo "NOTE: Environment variables for this prefix can be set via 'source ${env_file}'" | tee -a ${log_file}
 echo "Done." | tee -a ${log_file}
