@@ -67,6 +67,7 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/dleyna-server.git"          "$default_branch" "--enable-never-quit"
 "git@bitbucket.org:cvp2ri/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
 "git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git"  "$default_branch" ""
+"git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
 
 bailout()
@@ -257,11 +258,6 @@ do
 		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}" "${cvp2_repos[++i]}"
 done
 
-# Custom build for XDMR
-cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
-git clone git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git || tee -a ${log_file} || bailout "Couldn't clone valadoc"
-cd cvp2-xdmr-controller || bailout "Couldn't cd to the xdmr directory"
-./build_lib.sh && cp dmp ${CVP2_ROOT}/bin
 
 # Script for DMS
 cat > ${CVP2_ROOT}/bin/dms << EndOfFile
