@@ -54,7 +54,7 @@ cvp2_repos=(
 "git@github.com:cablelabs/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-base.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-good.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@github.com:cablelabs/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@github.com:cablelabs/gst-plugins-bad.git" "b80cfdd641b20" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@bitbucket.org:cvp2ri/gst-plugins-cl-dlnasrc.git" "$default_branch" ""
 "git@bitbucket.org:cvp2ri/gst-plugins-cl-dtcp.git" "$default_branch" ""
