@@ -1,0 +1,2 @@
+include 'external', 'orc', 'gstreamer', 'gst-plugins-base', 'gst-plugins-good', 'gst-plugins-bad', 'gst-plugins-ugly', 'gst-plugins-dlnasrc', 'gst-plugins-dtcpip', 'gst-libav', 'valadoc', 'gssdp', 'gupnp', 'gupnp-av', 'gupnp-dlna', 'rygel', 'dleyna-core', 'dleyna-server', 'dleyna-renderer', 'dleyna-connector-dbus', 'cvp2-xdmr-controller'
+

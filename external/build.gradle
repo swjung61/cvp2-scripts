@@ -1,0 +1,256 @@
+apply plugin: 'properties'
+
+buildscript {
+    ext {
+        clCredentials = {
+            username "${cl_repo_user}"
+            password "${cl_repo_password}"
+        }    
+        repoConfig = {
+            maven {
+                url "https://community.cablelabs.com/mvn/cvp2ri-repo"
+                credentials clCredentials
+            }
+        }
+    }
+
+    repositories repoConfig
+    
+    dependencies {
+        classpath(group: 'net.saliman', name: 'gradle-properties-plugin', version: '1.1.1')
+    }
+}
+
+if (new File('build-local.gradle').exists()) {
+    apply from: 'build-local.gradle'
+}
+
+repositories repoConfig
+
+configurations {
+    tarFiles { transitive = false }
+}
+
+//use of ${somestring-another} in results in a 'minus' operation on the two strings - use getProperty when resolving properties with dashes in the names
+
+List archives = [
+"com.cablelabs.cvp2:automake:" + getProperty("automake_version") + ":src@tar.gz", 
+"com.cablelabs.cvp2:autoconf:" + getProperty("autoconf_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:pkg-config:" + getProperty("pkg-config_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:libtool:" + getProperty("libtool_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:zlib:" + getProperty("zlib_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:glib:" + getProperty("glib_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:gobject-introspection:" + getProperty("gobject-introspection_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:libgee:" + getProperty("libgee_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:vala:" + getProperty("vala_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:libxml2:" + getProperty("libxml2_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:sqlite-autoconf:" + getProperty("sqlite-autoconf_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:glib-networking:" + getProperty("glib-networking_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:libsoup:" + getProperty("libsoup_version") + ":src@tar.gz",
+"com.cablelabs.cvp2:gupnp-vala:" + getProperty("gupnp-vala_version") + ":src@tar.gz"
+]
+
+dependencies {
+    tarFiles archives
+}
+
+//"libffi-dev" - required by glib
+//flex - required by gobject-introspection
+//"bison - required by gobject-introspection
+//"python-dev  - required by gobject-introspection
+//"cvs" - required by gstreamer
+//"yasm" required by gst-libav
+//"gtk-doc-tools" - required by gssdp
+//"libtool" - already installed, but newer version required by orc
+//"graphviz-dev" - required by valadoc package
+//libgee required by valadoc
+//vala required by valadoc
+//"libdbus-1-dev" required by dleyna-connector-dbus
+//"libasound2-dev" not required at build-time for compilation but probably enables gstreamer features via configure
+//"libgnutls-dev" is optional but leveraged by libav, but also by gst-plugins-bad
+//libgmp -required by nettle when built
+//libnettle - required by gnutls
+
+List packageDependencies = [
+"libffi-dev",
+"flex",
+"bison",
+"python-dev",
+"gtk-doc-tools",
+"util-linux",
+"git",
+"g++",
+"libxml-parser-perl",
+"libx11-dev",
+"cvs",
+"yasm",
+"graphviz",
+"graphviz-dev",
+"uuid-dev",
+"libdbus-1-dev",
+"libasound2-dev",
+"util-linux",
+"git",
+"g++",
+"libxml-parser-perl",
+"libx11-dev",
+"libgmp10",
+"libnettle4",
+"libgnutls-dev",
+"gnome-common",
+"intltool",
+"gettext",
+"libncurses-dev"
+]
+
+//dependency order (above) is not preserved - specify build order explicitly
+
+List buildOrder = [
+'automake',
+'autoconf',
+'pkg-config',
+'libtool',
+'zlib',
+'glib',
+'gobject-introspection',
+'libgee',
+'vala',
+'libxml2',
+'sqlite-autoconf',
+'glib-networking',
+'libsoup',
+'gupnp-vala'
+]
+
+Closure configEnv = {
+    def destination = "${prefix_path}"
+    def envVars = [:]
+    envVars['PKG_CONFIG_PATH'] = "${destination}/lib/pkgconfig:${destination}/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    envVars['ACLOCAL_FLAGS'] = "-I /usr/share/aclocal"
+    envVars['CFLAGS'] = "-I${destination}/include"
+    envVars['CPPFLAGS'] = "-I${destination}/include"
+    envVars['LDFLAGS'] = "-L${destination}/lib"
+    envVars['LD_LIBRARY_PATH'] = "${destination}/lib"
+    envVars['PKG_CONFIG_LIBDIR'] = "${destination}/lib/pkgconfig"
+    envVars['PATH'] = "${destination}/bin:${System.env.PATH}"
+    return envVars
+}
+
+task showPkgCommand << { 
+    println "Run this command to install required packages (requires sudo access):"
+    println ""
+    print "sudo apt-get install "
+    packageDependencies.each() {print "$it "}
+    println ""
+    println ""
+}
+
+task installAll << { println "Install all finished" }
+
+task makeAll << { println "Make all finished" }
+ 
+task cleanAll << { println "Clean all finished" }
+
+task uninstallAll << { println "Uninstall all finished" }
+
+configurations.tarFiles.dependencies.each { Dependency dep ->
+    task "install${dep.name}" (type: Exec) {
+        ext.directory = "${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}"
+        //println "make install - directory: " + directory
+        workingDir directory
+        executable "make"
+	args "install"
+        environment (configEnv())
+    }
+
+    task "make${dep.name}" (type: Exec) {
+        ext.directory = "${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}"
+        //println "make - directory: " + directory
+	workingDir directory
+	executable "make"
+        environment (configEnv())
+    }
+
+    task "configure${dep.name}" (type: Exec) {
+        ext.directory = "${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}"
+        //println "configure - directory: " + directory
+
+        inputs.files getPathProperties(project, directory, dep.name, "_configure_inputname")
+        outputs.files getPathProperties(project, directory, dep.name, "_configure_outputname")
+	workingDir directory
+        executable "${configure_command}"
+
+        List arguments = []
+        arguments << "--prefix=${prefix_path}"
+        def extraArguments = getProperties(project, dep.name, "_configure")
+        if (extraArguments.size() > 0) {
+            arguments.addAll(extraArguments)
+        }
+        args arguments
+        environment (configEnv())
+    }
+
+    task "extract${dep.name}" (type: Exec) {
+	//each dependency represents a single file - iterator.next can be used here
+        ext.fileName = configurations.tarFiles.files(dep).iterator().next().name
+        inputs.files "${full_base_path}/${source_dirname}/${dep.name}/${fileName}"
+        //using onlyIf predicate below to skip extract task if directory exists
+        workingDir "${full_base_path}/${source_dirname}/${dep.name}"
+        executable "tar"
+        args "xf", fileName
+        environment (configEnv())
+    }
+
+    task "copy${dep.name}" (type: Copy) {
+	//each dependency represents a single file - iterator.next can be used here
+        from configurations.tarFiles.files(dep).iterator().next()
+        into "${full_base_path}/${source_dirname}/$dep.name"
+    }
+
+    task "clean${dep.name}" (type: Exec) {
+        ext.directory = "${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}"
+        //println "make clean - directory: " + directory
+
+	workingDir directory
+	executable "make"
+	args "clean"
+        environment (configEnv())
+        ignoreExitValue true
+    }
+
+    task "uninstall${dep.name}" (type: Exec) {
+        ext.directory = "${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}"
+        //println "make uninstall - directory: " + directory
+	workingDir directory
+	executable "make"
+	args "uninstall"
+        environment (configEnv())
+        ignoreExitValue true
+    }
+}
+
+configurations.tarFiles.dependencies.each { Dependency dep ->
+    //install order is specified in the next block by setting the current dependency's configure task to be dependent on the prior dependency's install task
+    installAll.dependsOn {'install' + dep.name}
+    cleanAll.dependsOn {'uninstall' + dep.name}
+    uninstallAll.dependsOn {'uninstall' + dep.name}
+
+    //cleanAll and uninstallAll order should be reverse of install order - specified in the next block
+    makeAll.dependsOn {'make' + dep.name}
+    tasks['install' + dep.name].dependsOn tasks['make' + dep.name]
+    tasks['make' + dep.name].dependsOn tasks['configure' + dep.name]
+    tasks['configure' + dep.name].dependsOn tasks['extract' + dep.name]
+    tasks['extract' + dep.name].dependsOn tasks['copy' + dep.name]
+    tasks['extract' + dep.name].onlyIf {!new File("${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}").exists()}
+}
+
+buildOrder.eachWithIndex() {entry, i -> 
+    if (i > 0) {
+        def priorEntry = buildOrder[i - 1]
+        tasks['configure' + entry].dependsOn 
+		{'install' + priorEntry}
+        tasks['clean' + priorEntry].mustRunAfter{'clean' + entry}
+        tasks['uninstall' + priorEntry].mustRunAfter{'uninstall' + entry}
+    }
+}
+

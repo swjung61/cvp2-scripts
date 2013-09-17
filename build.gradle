@@ -1,0 +1,187 @@
+apply plugin: 'properties'
+apply plugin: 'git-dependencies'
+
+project.description = "CableLabs CVP2 installer"
+
+buildscript {
+    ext {
+        clCredentials = {
+            username "${cl_repo_user}"
+            password "${cl_repo_password}"
+        }    
+        repoConfig = {
+            maven {
+                url "https://community.cablelabs.com/mvn/cvp2ri-repo"
+                credentials clCredentials
+            }
+        }
+    }
+
+    repositories repoConfig
+    
+    dependencies {
+        classpath(group: 'net.saliman', name: 'gradle-properties-plugin', version: '1.1.1')
+        classpath(group: 'org.batcha.gradle.plugins', name: 'git-dependencies', version: '0.1.1')    
+    }
+}
+
+repositories repoConfig
+
+if (new File('build-local.gradle').exists()) {
+    apply from: 'build-local.gradle'
+}
+
+ext.full_base_path="${System.env.HOME}/${base_path}"
+ext.prefix_path="${full_base_path}/${install_dirname}"
+
+project.gitDependenciesDir = "${full_base_path}/${source_dirname}"
+
+task description {
+    description = 'Display project information'
+    println "Description:   ${project.description}"
+
+    println ""
+    println "Initial setup:"
+    println "1. Copy and paste the output of the following command:"
+    println "gradle showPkgCommand"
+    println ""
+    println "2. Install third-party component dependencies:"
+    println "gradle installDependencies"
+    println ""
+    println "3. Install git components:"
+    println "gradle install"
+    println ""
+    println ""
+}
+
+task installDependencies (dependsOn: ":external:installAll") << { println "Dependencies installed" }
+
+task showPkgCommand (dependsOn: ":external:showPkgCommand")
+
+List getProperties (Project project, String context, String propertyName) {
+    def outputs = []
+    def propertyNameToUse
+    if (project.hasProperty(context + propertyName)) {
+        propertyNameToUse = context + propertyName
+    } else if (project.hasProperty("default" + propertyName)) {
+        propertyNameToUse = "default" + propertyName
+    } else {
+        return outputs
+    }
+    
+    def line = project.getProperty(propertyNameToUse)
+    outputs = line.split(" ").collect{it.trim()}
+    return outputs
+}
+
+List getPathProperties (Project project, String directoryPrefix, String context, String propertyName) {
+    def outputs = []
+    def propertyNameToUse
+    if (project.hasProperty(context + propertyName)) {
+        propertyNameToUse = context + propertyName
+    } else if (project.hasProperty("default" + propertyName)) {
+        propertyNameToUse = "default" + propertyName
+    } else {
+        return outputs
+    }
+    
+    def line = project.getProperty(propertyNameToUse)
+    outputs = line.split(" ").collect{directoryPrefix + '/' + it.trim()}
+    return outputs
+}
+
+configurations {
+    git
+}
+
+configure(subprojects.findAll {it.name != 'external'}) {
+    if (new File('build-local.gradle').exists()) {
+        apply from: 'build-local.gradle'
+    }
+
+    project.description = description
+
+    if (!new File("${gitDependenciesDir}/${project.name}").exists()) {
+        println "Retrieving ${checkout_url} branch: ${checkout_branch} into ${gitDependenciesDir}/${project.name}"
+        println ""
+        dependencies {
+            rootProject.dependencies.git("com.cablelabs.cvp2:${project.name}:${checkout_branch}").ext.git = "${checkout_url}"
+        }
+    }
+
+    Closure configEnv = {
+        def destination = "${prefix_path}"
+        def envVars = [:]
+        envVars['PKG_CONFIG_PATH'] = "${destination}/lib/pkgconfig:${destination}/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+        envVars['ACLOCAL_FLAGS'] = "-I /usr/share/aclocal"
+        envVars['CFLAGS'] = "-I${destination}/include"
+        envVars['CPPFLAGS'] = "-I${destination}/include"
+        envVars['LDFLAGS'] = "-L${destination}/lib"
+        envVars['LD_LIBRARY_PATH'] = "${destination}/lib"
+        envVars['PKG_CONFIG_LIBDIR'] = "${destination}/lib/pkgconfig"
+        envVars['PATH'] = "${destination}/bin:${System.env.PATH}"
+        envVars['XDG_DATA_DIRS']="${destination}/share:${System.env.XDG_DATA_DIRS}"
+        return envVars
+    }
+
+    task "configure" (type: Exec) {
+        ext.directory = "${gitDependenciesDir}/${project.name}"
+        //println "configure - directory: " + directory
+        inputs.files getPathProperties(project, directory, project.name, "_configure_inputname")
+        outputs.files getPathProperties(project, directory, project.name, "_configure_outputname")
+        workingDir directory
+        executable "${configure_command}"
+
+        List arguments = []
+        arguments << "--prefix=${prefix_path}"
+        def extraArguments = getProperties(project, project.name, "_configure")
+        if (extraArguments.size() > 0) {
+            arguments.addAll(extraArguments)
+        }
+        args arguments
+        environment (configEnv())
+    }
+
+    task "make" (type: Exec, dependsOn:configure) {
+        ext.directory = "${gitDependenciesDir}/${project.name}"
+        //println "make - directory: " + directory
+        workingDir directory
+        executable "make"
+        environment (configEnv())
+    }
+
+    task "install" (type: Exec, dependsOn:make) {
+        ext.directory = "${gitDependenciesDir}/${project.name}"
+        //println "make install - directory: " + directory
+        workingDir directory
+        executable "make"
+        args "install"
+        environment (configEnv())
+    }
+
+    task "clean" (type: Exec) {
+        ext.directory = "${gitDependenciesDir}/${project.name}"
+        //println "make clean - directory: " + directory
+        workingDir directory
+        executable "make"
+        args "clean"
+        environment (configEnv())
+        ignoreExitValue true
+    }
+
+    task "uninstall" (type: Exec) {
+        ext.directory = "${gitDependenciesDir}/${project.name}"
+        //println "make uninstall - directory: " + directory
+        workingDir directory
+        executable "make"
+        args "uninstall"
+        environment (configEnv())
+        ignoreExitValue true
+    }
+
+    if (project.hasProperty("configure_dep")) {
+        //println "Adding ${configure_dep}:install as a dependency on ${project.name}.configure task"
+        configure.dependsOn{":${configure_dep}:install"}
+    }
+}
+
