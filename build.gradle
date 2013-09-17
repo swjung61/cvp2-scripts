@@ -113,7 +113,7 @@ task generateEnvSetup << {
     if (!f.exists()) {
         def entries = configEnv()
         entries.each {
-            f.append("export " + it.key + "=" + it.value + System.getProperty("line.separator"))
+            f.append('export ' + it.key + '="' + it.value + '"' + System.getProperty("line.separator"))
         }
     }
 }
