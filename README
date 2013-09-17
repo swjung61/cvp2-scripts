@@ -1,0 +1,38 @@
+Setup instructions:
+
+Gradle download and installation:
+ - Download Gradle from http://www.gradle.org/downloads
+ - Extract the zip and add the bin path to the PATH environment variable
+ - Create a $HOME/.gradle directory
+ - Create a $HOME/.gradle/gradle.properties file
+
+Gradle configuration supporting retrieval of components from the CableLabs Maven repository:
+
+ - Log in to https://community.cablelabs.com/mvn/webapp/profile.html using your CableLabs credentials
+ - Click on your user name in the upper-right (Logged in as _______)
+ - Enter your password in the 'current password' box and click the 'Unlock' button
+ - Copy into the clipboard the value in the 'Encrypted Password' box
+ - Add two entries to the $/HOME/.gradle/gradle.properties file:
+cl_repo_user=(your CableLabs user name)
+cl_repo_password=(the text from the 'Encrypted Password' field)
+ - Save the file
+
+CVP2 Gradle build script configuration:
+
+The root gradle.properties file stores directory settings used by the build scripts:
+ - base_path: is a base directory relative to the $HOME directory
+ - source_dirname: a subdirectory of base_path where components will be extracted or Git cloned and built.
+ - install_dirname: a subdirectory of base_path where components will be installed.
+
+The 'external' subproject builds tarball-installable components retrieved from the CableLabs maven repository.  The external  gradle.properties file stores the specific versions of those individual components which will be downloaded from the CableLabs maven repository.
+
+The remaining subdirectories contain gradle.properties files which store Git repository and branch information along with build-specific configuration settings.  All subprojects except for valadoc reference GitHub or Bitbucket repositories and specify the cbl_master/plugfest36 branch by default.
+
+Installation:
+
+ - Run 'gradle' to download all Maven-accessible components and clone all Git repositories.
+ - Run 'gradle showPkgCommand' to display an 'apt-get install' command line which can be pasted in a shell in order to install package-available dependencies
+ - Run 'gradle installDependencies' to install the Maven-accessible components
+ - Run 'gradle install' to install all components from Git repositories
+ - Run 'gradle generateEnvSetup' to generate an env_setup script in $HOME/(base_path) which updates environment variables to point to the $HOME/(base_path)/(install_dirname) directory as the install root
+

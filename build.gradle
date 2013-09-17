@@ -51,6 +51,9 @@ task description {
     println "3. Install git components:"
     println "gradle install"
     println ""
+    println "4. Generate env_setup script:"
+    println "gradle generateEnvSetup"
+    println ""
     println ""
 }
 
@@ -90,6 +93,31 @@ List getPathProperties (Project project, String directoryPrefix, String context,
     return outputs
 }
 
+Closure configEnv = {
+    def destination = "${prefix_path}"
+    def envVars = [:]
+    envVars['PKG_CONFIG_PATH'] = "${destination}/lib/pkgconfig:${destination}/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    envVars['ACLOCAL_FLAGS'] = "-I /usr/share/aclocal"
+    envVars['CFLAGS'] = "-I${destination}/include"
+    envVars['CPPFLAGS'] = "-I${destination}/include"
+    envVars['LDFLAGS'] = "-L${destination}/lib"
+    envVars['LD_LIBRARY_PATH'] = "${destination}/lib"
+    envVars['PKG_CONFIG_LIBDIR'] = "${destination}/lib/pkgconfig"
+    envVars['PATH'] = "${destination}/bin:${System.env.PATH}"
+    envVars['XDG_DATA_DIRS']="${destination}/share:${System.env.XDG_DATA_DIRS}"
+    return envVars
+}
+
+task generateEnvSetup << {
+    def f = new File("${full_base_path}/env_setup")
+    if (!f.exists()) {
+        def entries = configEnv()
+        entries.each {
+            f.append("export " + it.key + "=" + it.value + System.getProperty("line.separator"))
+        }
+    }
+}
+
 configurations {
     git
 }
@@ -107,21 +135,6 @@ configure(subprojects.findAll {it.name != 'external'}) {
         dependencies {
             rootProject.dependencies.git("com.cablelabs.cvp2:${project.name}:${checkout_branch}").ext.git = "${checkout_url}"
         }
-    }
-
-    Closure configEnv = {
-        def destination = "${prefix_path}"
-        def envVars = [:]
-        envVars['PKG_CONFIG_PATH'] = "${destination}/lib/pkgconfig:${destination}/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
-        envVars['ACLOCAL_FLAGS'] = "-I /usr/share/aclocal"
-        envVars['CFLAGS'] = "-I${destination}/include"
-        envVars['CPPFLAGS'] = "-I${destination}/include"
-        envVars['LDFLAGS'] = "-L${destination}/lib"
-        envVars['LD_LIBRARY_PATH'] = "${destination}/lib"
-        envVars['PKG_CONFIG_LIBDIR'] = "${destination}/lib/pkgconfig"
-        envVars['PATH'] = "${destination}/bin:${System.env.PATH}"
-        envVars['XDG_DATA_DIRS']="${destination}/share:${System.env.XDG_DATA_DIRS}"
-        return envVars
     }
 
     task "configure" (type: Exec) {
