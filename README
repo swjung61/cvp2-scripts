@@ -1,6 +1,10 @@
 Setup instructions:
 
-Gradle download and installation:
+The build script is based on Gradle, and can be ran via the provided 'Gradle wrapper' (the ./gradlew shell script) or from a manual installation of Gradle.
+
+If Gradle is installed manually, the 'gradle' command can be used instead of the Gradle wrapper shell script './gradlew' in the instructions below.
+
+Optional Gradle download and installation:
  - Download Gradle from http://www.gradle.org/downloads
  - Extract the zip and add the bin path to the PATH environment variable
  - Create a $HOME/.gradle directory
@@ -26,13 +30,15 @@ The root gradle.properties file stores directory settings used by the build scri
 
 The 'external' subproject builds tarball-installable components retrieved from the CableLabs maven repository.  The external  gradle.properties file stores the specific versions of those individual components which will be downloaded from the CableLabs maven repository.
 
+The gradle directory contains the Gradle wrapper support.
+
 The remaining subdirectories contain gradle.properties files which store Git repository and branch information along with build-specific configuration settings.  All subprojects except for valadoc reference GitHub or Bitbucket repositories and specify the cbl_master/plugfest36 branch by default.
 
 Installation:
 
- - Run 'gradle' to download all Maven-accessible components and clone all Git repositories.
- - Run 'gradle showPkgCommand' to display an 'apt-get install' command line which can be pasted in a shell in order to install package-available dependencies
- - Run 'gradle installDependencies' to install the Maven-accessible components
- - Run 'gradle install' to install all components from Git repositories
- - Run 'gradle generateEnvSetup' to generate an env_setup script in $HOME/(base_path) which updates environment variables to point to the $HOME/(base_path)/(install_dirname) directory as the install root
+ - Run './gradlew' to download all Maven-accessible components and clone all Git repositories.
+ - Run './gradlew showPkgCommand' to display an 'apt-get install' command line which can be pasted in a shell in order to install package-available dependencies
+ - Run './gradlew installDependencies' to install the Maven-accessible components
+ - Run './gradlew install' to install all components from Git repositories
+ - Run './gradlew generateEnvSetup' to generate an env_setup script in $HOME/(base_path) which updates environment variables to point to the $HOME/(base_path)/(install_dirname) directory as the install root
 
