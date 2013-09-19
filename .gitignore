@@ -2,4 +2,8 @@
 build
 target
 gradlew.bat
+.project
+.settings
+.eclipse
+.classpath
 
