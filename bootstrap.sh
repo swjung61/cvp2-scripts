@@ -72,6 +72,8 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
 
+dtcpip_pc="${CVP2_ROOT}/lib/pkgconfig/dtcpip.pc"
+
 bailout()
 {
     local message="$1"
@@ -297,7 +299,6 @@ done
 
 # Setup dtcpip env variables
 dtcp_rygel_repo="git@bitbucket.org:cvp2ri/dtcp-rygel.git"
-dtcpip_pc="${CVP2_ROOT}/lib/pkgconfig/dtcpip.pc"
 dtcpip_lib="${CVP2_ROOT}/lib/libdtcpip.so"
 dtcpip_header="${CVP2_ROOT}/include/dtcpip.h"
 dtcpip_vapi="${CVP2_ROOT}/vapi/dtcpip.vapi"
