@@ -108,10 +108,10 @@ List packageDependencies = [
 List buildOrder = [
 'automake',
 'autoconf',
-'pkg-config',
-'libtool',
 'zlib',
 'glib',
+'pkg-config',
+'libtool',
 'gobject-introspection',
 'libgee',
 'vala',
