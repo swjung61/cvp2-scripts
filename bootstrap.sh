@@ -185,6 +185,27 @@ cat ${env_file} | tee -a ${log_file}
 # Set environment
 source ${env_file}
 
+echo "*** Creating dtcpip.pc file." | tee -a ${log_file}
+# creating dtcpip.pc file
+cat > ${dtcpip_pc} << EndOfFile
+prefix=${CVP2_ROOT}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+datarootdir=\${prefix}/share
+datadir=\${datarootdir}
+
+Name: dtcpip
+Description: DTCP
+Version: 1.0
+Requires:
+Libs: -L\${libdir} -ldtcpip
+Cflags: -I\${includedir}
+EndOfFile
+
+# Log environment
+cat ${dtcpip_pc} | tee -a ${log_file}
+
 # if this cache directory exists, it can cause problems
 rm -r -f  ~/.cache/g-ir-scanner
 
@@ -223,6 +244,27 @@ process_package()
     make install 2>&1 | tee -a ${log_file} || bailout "Couldn't install ${package_base}"
 }
 
+install_dtcp_lib()
+{
+    echo "*** Processing dtcp-rygel Repository: ${1}" 2>&1 | tee -a ${log_file}
+
+    local repo_url="$1"
+    local repo_branch="$2"
+    local repo_base=$(basename ${repo_url} .git)
+
+    echo "*** Installing ${repo_base}..." 2>&1 | tee -a ${log_file}
+    cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
+    git clone ${repo_url} | tee -a ${log_file} || bailout "Couldn't clone ${repo_base}"
+    cd ${repo_base} || bailout "Couldn't cd to ${repo_base} directory"
+    git checkout ${repo_branch}
+
+    echo "*** Installing dtcp library files" | tee -a ${log_file}
+    cp include/dtcpip.h $dtcpip_header | tee -a ${log_file}
+    cp lib/libdtcpip.so $dtcpip_lib | tee -a ${log_file}
+    cp vapi/dtcpip.vapi ${CVP2_ROOT}/share/vala/vapi | tee -a ${log_file}
+    echo "*** Done copying dtcp library files."
+}
+
 process_repo()
 {
 	echo "*** Processing Repository: ${1}" 2>&1 | tee -a ${log_file}
@@ -253,6 +295,14 @@ do
 	process_package "${external_packages[i]}" "${external_packages[++i]}"
 done
 
+# Setup dtcpip env variables
+dtcp_rygel_repo="git@bitbucket.org:cvp2ri/dtcp-rygel.git"
+dtcpip_pc="${CVP2_ROOT}/lib/pkgconfig/dtcpip.pc"
+dtcpip_lib="${CVP2_ROOT}/lib/libdtcpip.so"
+dtcpip_header="${CVP2_ROOT}/include/dtcpip.h"
+dtcpip_vapi="${CVP2_ROOT}/vapi/dtcpip.vapi"
+install_dtcp_lib "$dtcp_rygel_repo" $default_branch
+
 # CVP2 controlled repositories
 num_cvp2_repos=${#cvp2_repos[*]}
 for ((i=0; i<=$(($num_cvp2_repos-1)); i++))
@@ -260,6 +310,9 @@ do
 		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}" "${cvp2_repos[++i]}"
 done
 
+cd ${CVP2_GIT}/rygel
+make uninstall && make clean && make & make install
+cp ${dtcpip_lib} ${CVP2_ROOT}/lib
 
 # Script for DMS
 cat > ${CVP2_ROOT}/bin/dms << EndOfFile
