@@ -72,8 +72,6 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
 
-dtcpip_pc="${CVP2_ROOT}/lib/pkgconfig/dtcpip.pc"
-
 bailout()
 {
     local message="$1"
@@ -187,27 +185,6 @@ cat ${env_file} | tee -a ${log_file}
 # Set environment
 source ${env_file}
 
-echo "*** Creating dtcpip.pc file." | tee -a ${log_file}
-# creating dtcpip.pc file
-cat > ${dtcpip_pc} << EndOfFile
-prefix=${CVP2_ROOT}
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-datarootdir=\${prefix}/share
-datadir=\${datarootdir}
-
-Name: dtcpip
-Description: DTCP
-Version: 1.0
-Requires:
-Libs: -L\${libdir} -ldtcpip
-Cflags: -I\${includedir}
-EndOfFile
-
-# Log environment
-cat ${dtcpip_pc} | tee -a ${log_file}
-
 # if this cache directory exists, it can cause problems
 rm -r -f  ~/.cache/g-ir-scanner
 
@@ -302,7 +279,31 @@ dtcp_rygel_repo="git@bitbucket.org:cvp2ri/dtcp-rygel.git"
 dtcpip_lib="${CVP2_ROOT}/lib/libdtcpip.so"
 dtcpip_header="${CVP2_ROOT}/include/dtcpip.h"
 dtcpip_vapi="${CVP2_ROOT}/vapi/dtcpip.vapi"
-install_dtcp_lib "$dtcp_rygel_repo" $default_branch
+install_dtcp_lib "$dtcp_rygel_repo" "$default_branch"
+
+dtcpip_pc="${CVP2_ROOT}/lib/pkgconfig/dtcpip.pc"
+
+echo "*** Creating dtcpip.pc file." | tee -a ${log_file}
+echo $dtcpip_pc
+# creating dtcpip.pc file
+cat > $dtcpip_pc << EndOfFile
+prefix=${CVP2_ROOT}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+datarootdir=\${prefix}/share
+datadir=\${datarootdir}
+
+Name: dtcpip
+Description: DTCP
+Version: 1.0
+Requires:
+Libs: -L\${libdir} -ldtcpip
+Cflags: -I\${includedir}
+EndOfFile
+
+# Log environment
+cat ${dtcpip_pc} | tee -a ${log_file}
 
 # CVP2 controlled repositories
 num_cvp2_repos=${#cvp2_repos[*]}
@@ -310,10 +311,6 @@ for ((i=0; i<=$(($num_cvp2_repos-1)); i++))
 do
 		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}" "${cvp2_repos[++i]}"
 done
-
-cd ${CVP2_GIT}/rygel
-make uninstall && make clean && make & make install
-cp ${dtcpip_lib} ${CVP2_ROOT}/lib
 
 # Script for DMS
 cat > ${CVP2_ROOT}/bin/dms << EndOfFile
