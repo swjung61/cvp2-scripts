@@ -61,7 +61,7 @@ cvp2_repos=(
 "git@github.com:cablelabs/gst-libav.git"              "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git://git.gnome.org/valadoc"                         "5dde44de8" ""
 "git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
-"git@bitbucket.org:cvp2ri/gupnp.git"                  "gupnp-0.20.5" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
 "git@bitbucket.org:cvp2ri/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
