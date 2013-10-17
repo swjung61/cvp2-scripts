@@ -5,6 +5,8 @@ set -o pipefail
 
 default_build=~/cvp2
 
+default_branch=cbl_master/plugfest36
+
 prerequisite_packages=(
 "git"
 "g++"
@@ -33,7 +35,7 @@ external_packages=(
 "http://ftp.gnu.org/pub/gnu/libtool/libtool-2.4.2.tar.xz" ""
 "http://www.sqlite.org/2013/sqlite-autoconf-3071602.tar.gz" ""
 "http://xmlsoft.org/sources/libxml2-2.9.0.tar.gz" ""
-"http://ftp.gnu.org/gnu/gmp/gmp-5.1.1.tar.xz" ""
+"http://ftp.gnu.org/gnu/gmp/gmp-5.1.1.tar.xz" "ABI=32"
 "http://www.lysator.liu.se/~nisse/archive/nettle-2.7.tar.gz" ""
 "ftp://ftp.gnutls.org/gcrypt/gnutls/v3.2/gnutls-3.2.0.tar.xz" ""
 "http://ftp.gnome.org/pub/GNOME/sources/gobject-introspection/1.36/gobject-introspection-1.36.0.tar.xz" ""
@@ -48,23 +50,26 @@ external_packages=(
 )
 
 cvp2_repos=(
-"http://anongit.freedesktop.org/git/gstreamer/orc.git" "orc-0.4.17" "--enable-introspection"
-"http://anongit.freedesktop.org/git/gstreamer/gstreamer.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-base.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-good.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-bad.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@bitbucket.org:cvp2ri/gst-plugins-ugly.git" "" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"http://anongit.freedesktop.org/git/gstreamer/gst-libav.git" "401094fe0fab78" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git://git.gnome.org/valadoc" "5dde44de8" ""
-"git@bitbucket.org:cvp2ri/gssdp.git" "" "--enable-introspection --without-gtk"
-"git@bitbucket.org:cvp2ri/gupnp.git" "" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-av.git" "" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-dlna.git" "" "--enable-introspection --enable-gstreamer-metadata-backend"
-"git@bitbucket.org:cvp2ri/rygel.git" "cablelabs/master" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
-"git@bitbucket.org:cvp2ri/dleyna-core.git" "cablelabs/master" ""
-"git@bitbucket.org:cvp2ri/dleyna-server.git" "cablelabs/master"  "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-renderer.git" "cablelabs/master"  "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git" "cablelabs/master" ""
+"git@github.com:cablelabs/orc.git"                    "$default_branch" "--enable-introspection"
+"git@github.com:cablelabs/gstreamer.git"              "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@github.com:cablelabs/gst-plugins-base.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@github.com:cablelabs/gst-plugins-good.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@github.com:cablelabs/gst-plugins-bad.git"        "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@github.com:cablelabs/gst-plugins-ugly.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git@github.com:cablelabs/gst-plugins-dlnasrc.git" "$default_branch" ""
+"git@github.com:cablelabs/gst-plugins-dtcpip.git"    "$default_branch" ""
+"git@github.com:cablelabs/gst-libav.git"              "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
+"git://git.gnome.org/valadoc"                         "5dde44de8" ""
+"git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
+"git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
+"git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
+"git@bitbucket.org:cvp2ri/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
+"git@bitbucket.org:cvp2ri/dleyna-core.git"            "$default_branch" ""
+"git@bitbucket.org:cvp2ri/dleyna-server.git"          "$default_branch" "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
+"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git"  "$default_branch" ""
+"git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
 
 bailout()
@@ -218,6 +223,27 @@ process_package()
     make install 2>&1 | tee -a ${log_file} || bailout "Couldn't install ${package_base}"
 }
 
+install_dtcp_lib()
+{
+    echo "*** Processing dtcp-rygel Repository: ${1}" 2>&1 | tee -a ${log_file}
+
+    local repo_url="$1"
+    local repo_branch="$2"
+    local repo_base=$(basename ${repo_url} .git)
+
+    echo "*** Installing ${repo_base}..." 2>&1 | tee -a ${log_file}
+    cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
+    git clone ${repo_url} | tee -a ${log_file} || bailout "Couldn't clone ${repo_base}"
+    cd ${repo_base} || bailout "Couldn't cd to ${repo_base} directory"
+    git checkout ${repo_branch}
+
+    echo "*** Installing dtcp library files" | tee -a ${log_file}
+    cp include/dtcpip.h $dtcpip_header | tee -a ${log_file}
+    cp lib/libdtcpip.so $dtcpip_lib | tee -a ${log_file}
+    cp vapi/dtcpip.vapi ${CVP2_ROOT}/share/vala/vapi | tee -a ${log_file}
+    echo "*** Done copying dtcp library files."
+}
+
 process_repo()
 {
 	echo "*** Processing Repository: ${1}" 2>&1 | tee -a ${log_file}
@@ -248,6 +274,37 @@ do
 	process_package "${external_packages[i]}" "${external_packages[++i]}"
 done
 
+# Setup dtcpip env variables
+dtcp_rygel_repo="git@bitbucket.org:cvp2ri/dtcp-rygel.git"
+dtcpip_lib="${CVP2_ROOT}/lib/libdtcpip.so"
+dtcpip_header="${CVP2_ROOT}/include/dtcpip.h"
+dtcpip_vapi="${CVP2_ROOT}/vapi/dtcpip.vapi"
+install_dtcp_lib "$dtcp_rygel_repo" "$default_branch"
+
+dtcpip_pc="${CVP2_ROOT}/lib/pkgconfig/dtcpip.pc"
+
+echo "*** Creating dtcpip.pc file." | tee -a ${log_file}
+echo $dtcpip_pc
+# creating dtcpip.pc file
+cat > $dtcpip_pc << EndOfFile
+prefix=${CVP2_ROOT}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+datarootdir=\${prefix}/share
+datadir=\${datarootdir}
+
+Name: dtcpip
+Description: DTCP
+Version: 1.0
+Requires:
+Libs: -L\${libdir} -ldtcpip
+Cflags: -I\${includedir}
+EndOfFile
+
+# Log environment
+cat ${dtcpip_pc} | tee -a ${log_file}
+
 # CVP2 controlled repositories
 num_cvp2_repos=${#cvp2_repos[*]}
 for ((i=0; i<=$(($num_cvp2_repos-1)); i++))
@@ -255,11 +312,19 @@ do
 		process_repo "${cvp2_repos[i]}" "${cvp2_repos[++i]}" "${cvp2_repos[++i]}"
 done
 
-# Custom build for XDMR
-cd ${CVP2_GIT} || bailout "Couldn't cd to ${CVP2_GIT}"
-git clone git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git || tee -a ${log_file} || bailout "Couldn't clone valadoc"
-cd cvp2-xdmr-controller || bailout "Couldn't cd to the xdmr directory"
-./build_lib.sh && cp dmp ${CVP2_ROOT}/bin
+# Script for DMS
+cat > ${CVP2_ROOT}/bin/dms << EndOfFile
+#!/bin/bash
+${CVP2_ROOT}/bin/rygel --disable-plugin Playbin \$@
+EndOfFile
+chmod 775 ${CVP2_ROOT}/bin/dms
+
+# Script for DMR
+cat > ${CVP2_ROOT}/bin/dmr << EndOfFile
+#!/bin/bash
+${CVP2_ROOT}/bin/rygel --disable-plugin MediaExport \$@
+EndOfFile
+chmod 775 ${CVP2_ROOT}/bin/dmr
 
 echo "NOTE: Environment variables for this prefix can be set via 'source ${env_file}'" | tee -a ${log_file}
 echo "Done." | tee -a ${log_file}
