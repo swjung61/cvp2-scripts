@@ -54,7 +54,7 @@ task description {
     println "./gradlew install"
     println ""
     println "4. Generate env_setup script:"
-    println "gradle generateEnvSetup"
+    println "./gradlew generateEnvSetup"
     println ""
     println ""
 }
@@ -194,9 +194,9 @@ configure(subprojects.findAll {it.name != 'external'}) {
         ignoreExitValue true
     }
 
-    if (project.hasProperty("configure_dep")) {
-        //println "Adding ${configure_dep}:install as a dependency on ${project.name}.configure task"
-        configure.dependsOn{":${configure_dep}:install"}
+    def dependencyNames = getProperties(project, "", "configure_deps")
+    dependencyNames.each { String dependency ->
+        configure.dependsOn{":${dependency}:install"}
     }
 }
 

@@ -42,12 +42,9 @@ List archives = [
 "com.cablelabs.cvp2:glib:" + getProperty("glib_version") + ":src@tar.gz",
 "com.cablelabs.cvp2:gobject-introspection:" + getProperty("gobject-introspection_version") + ":src@tar.gz",
 "com.cablelabs.cvp2:libgee:" + getProperty("libgee_version") + ":src@tar.gz",
-"com.cablelabs.cvp2:vala:" + getProperty("vala_version") + ":src@tar.gz",
 "com.cablelabs.cvp2:libxml2:" + getProperty("libxml2_version") + ":src@tar.gz",
 "com.cablelabs.cvp2:sqlite-autoconf:" + getProperty("sqlite-autoconf_version") + ":src@tar.gz",
-"com.cablelabs.cvp2:glib-networking:" + getProperty("glib-networking_version") + ":src@tar.gz",
-"com.cablelabs.cvp2:libsoup:" + getProperty("libsoup_version") + ":src@tar.gz",
-"com.cablelabs.cvp2:gupnp-vala:" + getProperty("gupnp-vala_version") + ":src@tar.gz"
+"com.cablelabs.cvp2:glib-networking:" + getProperty("glib-networking_version") + ":src@tar.gz"
 ]
 
 dependencies {
@@ -64,7 +61,6 @@ dependencies {
 //"libtool" - already installed, but newer version required by orc
 //"graphviz-dev" - required by valadoc package
 //libgee required by valadoc
-//vala required by valadoc
 //"libdbus-1-dev" required by dleyna-connector-dbus
 //"libasound2-dev" not required at build-time for compilation but probably enables gstreamer features via configure
 //"libgnutls-dev" is optional but leveraged by libav, but also by gst-plugins-bad
@@ -100,7 +96,8 @@ List packageDependencies = [
 "gnome-common",
 "intltool",
 "gettext",
-"libncurses-dev"
+"libncurses-dev",
+"valac"
 ]
 
 //dependency order (above) is not preserved - specify build order explicitly
@@ -114,12 +111,9 @@ List buildOrder = [
 'libtool',
 'gobject-introspection',
 'libgee',
-'vala',
 'libxml2',
 'sqlite-autoconf',
-'glib-networking',
-'libsoup',
-'gupnp-vala'
+'glib-networking'
 ]
 
 Closure configEnv = {
