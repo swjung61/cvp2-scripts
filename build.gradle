@@ -21,7 +21,7 @@ buildscript {
     
     dependencies {
         classpath(group: 'net.saliman', name: 'gradle-properties-plugin', version: '1.1.1')
-        classpath(group: 'org.batcha.gradle.plugins', name: 'git-dependencies', version: '0.1.1')    
+        classpath(group: 'org.batcha.gradle.plugins', name: 'git-dependencies', version: '0.1.2')    
     }
 }
 
