@@ -22,7 +22,10 @@ prerequisite_packages=(
 "libx11-dev"
 "yasm"
 "cvs"
+"valac"
 )
+
+# TODO: Remove valac from this list when Vala 0.23 is released
 
 external_packages=(
 "http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.xz" ""
@@ -71,6 +74,8 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git"  "$default_branch" ""
 "git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
+
+# TODO: Move Vala to the tarball list when 0.23 is released (so we don't have to have valac to compile valac)
 
 bailout()
 {
