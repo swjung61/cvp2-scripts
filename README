@@ -18,7 +18,7 @@ The 'external' subproject builds tarball-installable components retrieved from t
 
 The gradle directory contains the Gradle wrapper support.
 
-The remaining subdirectories contain gradle.properties files which store Git repository and branch information along with build-specific configuration settings.  All subprojects except for valadoc reference GitHub or Bitbucket repositories and specify the cbl_master/plugfest36 branch by default.
+The remaining subdirectories contain gradle.properties files which store Git repository and branch information along with build-specific configuration settings.
 
 Installation:
 
