@@ -5,7 +5,7 @@ set -o pipefail
 
 default_build=~/cvp2
 
-default_branch=cbl_master/plugfest36
+default_branch=cablelabs/master
 
 prerequisite_packages=(
 "git"
@@ -57,17 +57,17 @@ cvp2_repos=(
 "git@github.com:cablelabs/gst-plugins-good.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-bad.git"        "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-ugly.git"       "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@github.com:cablelabs/gst-plugins-dlnasrc.git" "$default_branch" ""
-"git@github.com:cablelabs/gst-plugins-dtcpip.git"    "$default_branch" ""
+"git@github.com:cablelabs/gst-plugins-dlnasrc.git"    "$default_branch" ""
+"git@github.com:cablelabs/gst-plugins-dtcpip.git"     "$default_branch" ""
 "git@github.com:cablelabs/gst-libav.git"              "$default_branch" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git://git.gnome.org/vala"                            "b05fa3325" ""
 "git://git.gnome.org/valadoc"                         "98e3eb820" ""
-"git://git.gnome.org/gupnp-vala"                       "gupnp-vala-0.10.5-real" ""
+"git://git.gnome.org/gupnp-vala"                      "gupnp-vala-0.10.5-real" ""
 "git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
 "git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
-"git@bitbucket.org:cvp2ri/rygel.git"                  "cablelabs/master" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala --with-media-engine=odid"
+"git@bitbucket.org:cvp2ri/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala --with-media-engine=odid"
 "git@bitbucket.org:cvp2ri/dleyna-core.git"            "$default_branch" ""
 "git@bitbucket.org:cvp2ri/dleyna-server.git"          "$default_branch" "--enable-never-quit"
 "git@bitbucket.org:cvp2ri/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
