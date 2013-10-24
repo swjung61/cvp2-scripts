@@ -45,3 +45,5 @@ cl_repo_user=(your CableLabs user name)
 cl_repo_password=(the text from the 'Encrypted Password' field)
  - Save the file
 
+The 'checkout_branch' Gradle property specifies which branch is checked out for Git-based modules.  The root gradle.properties defines a default checkout_branch property which can be overridden in each individual module.
+
