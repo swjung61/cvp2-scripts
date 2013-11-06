@@ -57,6 +57,9 @@ task description {
     println "./gradlew generateEnvSetup"
     println ""
     println ""
+    println "To build and install an individual subproject without building dependencies:"
+    println "./gradlew -p {project} install -Pskipdeps"
+    println ""
 }
 
 task installDependencies (dependsOn: ":external:installAll") << { println "Dependencies installed" }
@@ -97,17 +100,39 @@ List getPathProperties (Project project, String directoryPrefix, String context,
 
 Closure configEnv = {
     def destination = "${prefix_path}"
+    def pkgConfigPath = "${destination}/lib/pkgconfig:${destination}/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    def ldLibraryPath="${destination}/lib"
+    def xdgDataDirs = "${destination}/share" 
     def envVars = [:]
-    envVars['PKG_CONFIG_PATH'] = "${destination}/lib/pkgconfig:${destination}/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    envVars['PKG_CONFIG_PATH'] = "${System.env.PKG_CONFIG_PATH}" != "null" ? "${System.env.PKG_CONFIG_PATH}:${pkgConfigPath}" : "${pkgConfigPath}"
     envVars['ACLOCAL_FLAGS'] = "-I /usr/share/aclocal -I ${destination}/share/aclocal"
     envVars['CFLAGS'] = "-I${destination}/include"
     envVars['CPPFLAGS'] = "-I${destination}/include"
     envVars['LDFLAGS'] = "-L${destination}/lib"
-    envVars['LD_LIBRARY_PATH'] = "${destination}/lib"
+    envVars['LD_LIBRARY_PATH'] = "${System.env.LD_LIBRARY_PATH}" != "null" ? "${System.env.LD_LIBRARY_PATH}:${ldLibraryPath}" : "${ldLibraryPath}"
     envVars['PKG_CONFIG_LIBDIR'] = "${destination}/lib/pkgconfig"
     envVars['PATH'] = "${destination}/bin:${System.env.PATH}"
-    envVars['XDG_DATA_DIRS']="${destination}/share:${System.env.XDG_DATA_DIRS}"
+    envVars['XDG_DATA_DIRS'] = "${System.env.XDG_DATA_DIRS}" != "null" ? "${System.env.XDG_DATA_DIRS}:${xdgDataDirs}" : "${xdgDataDirs}"
     return envVars
+}
+
+boolean checkDisabled(String projectName) {
+    if (project.getProperty("gst_uninstalled_core") == "true" &&
+            ((projectName == "gstreamer") || 
+            (projectName == "gst-plugins-base") ||
+            (projectName == "gst-plugins-good") || 
+            (projectName == "gst-plugins-bad") ||
+            (projectName == "gst-plugins-ugly") ||
+            (projectName == "gst-libav"))) { 
+        return true; 
+    }
+    if (project.getProperty("gst_uninstalled_dlnasrc") == "true" && projectName == "gst-plugins-dlnasrc") {
+        return true; 
+    }
+    if (project.getProperty("gst_uninstalled_dtcpip") == "true" && projectName == "gst-plugins-dtcpip") {
+        return true; 
+    }
+    return false;
 }
 
 task generateEnvSetup << {
@@ -131,11 +156,15 @@ configure(subprojects.findAll {it.name != 'external'}) {
 
     project.description = description
 
-    if (!new File("${gitDependenciesDir}/${project.name}").exists()) {
-        println "Retrieving ${checkout_url} branch: ${checkout_branch} into ${gitDependenciesDir}/${project.name}"
-        println ""
-        dependencies {
-            rootProject.dependencies.git("com.cablelabs.cvp2:${project.name}:${checkout_branch}").ext.git = "${checkout_url}"
+    if (checkDisabled(it.name)) {
+        println "Not building ${project.name}"
+    } else {
+        if (!new File("${gitDependenciesDir}/${project.name}").exists())     {
+            println "Retrieving ${checkout_url} branch: ${checkout_branch} into ${gitDependenciesDir}/${project.name}"
+            println ""
+            dependencies {
+                rootProject.dependencies.git("com.cablelabs.cvp2:${project.name}:${checkout_branch}").ext.git = "${checkout_url}"
+            }
         }
     }
 
@@ -145,9 +174,12 @@ configure(subprojects.findAll {it.name != 'external'}) {
         inputs.files getPathProperties(project, directory, project.name, "_configure_inputname")
         outputs.files getPathProperties(project, directory, project.name, "_configure_outputname")
         workingDir directory
-        executable "${configure_command}"
+        executable project.getProperty("gst_uninstalled_core") == "true" ? "gst-git" : "${configure_command}"
 
         List arguments = []
+        if (project.getProperty("gst_uninstalled_core") == "true") {
+            arguments << "${configure_command}"
+        }
         arguments << "--prefix=${prefix_path}"
         def extraArguments = getProperties(project, project.name, "_configure")
         if (extraArguments.size() > 0) {
@@ -161,16 +193,35 @@ configure(subprojects.findAll {it.name != 'external'}) {
         ext.directory = "${gitDependenciesDir}/${project.name}"
         //println "make - directory: " + directory
         workingDir directory
-        executable "make"
+        executable project.getProperty("gst_uninstalled_core") == "true" ? "gst-git" : "make"
+
+        List arguments = []
+        if (project.getProperty("gst_uninstalled_core") == "true") {
+            arguments << "make"
+        }
+        args arguments
         environment (configEnv())
+    }
+
+    task removeLaFiles << {
+        def filesToRemove = getProperties(project, "", "post_install_remove_la_files")
+        filesToRemove.each {
+            new File("${prefix_path}/" + it).delete();
+        }
     }
 
     task "install" (type: Exec, dependsOn:make) {
         ext.directory = "${gitDependenciesDir}/${project.name}"
         //println "make install - directory: " + directory
         workingDir directory
-        executable "make"
-        args "install"
+        executable project.getProperty("gst_uninstalled_core") == "true" ? "gst-git" : "make"
+
+        List arguments = []
+        if (project.getProperty("gst_uninstalled_core") == "true") {
+            arguments << "make"
+        }
+        arguments << "install"
+        args arguments
         environment (configEnv())
     }
 
@@ -178,8 +229,14 @@ configure(subprojects.findAll {it.name != 'external'}) {
         ext.directory = "${gitDependenciesDir}/${project.name}"
         //println "make clean - directory: " + directory
         workingDir directory
-        executable "make"
-        args "clean"
+        executable project.getProperty("gst_uninstalled_core") == "true" ? "gst-git" : "make"
+
+        List arguments = []
+        if (project.getProperty("gst_uninstalled_core") == "true") {
+            arguments << "make"
+        }
+        arguments << "clean"
+        args arguments
         environment (configEnv())
         ignoreExitValue true
     }
@@ -188,15 +245,31 @@ configure(subprojects.findAll {it.name != 'external'}) {
         ext.directory = "${gitDependenciesDir}/${project.name}"
         //println "make uninstall - directory: " + directory
         workingDir directory
-        executable "make"
-        args "uninstall"
+        executable project.getProperty("gst_uninstalled_core") == "true" ? "gst-git" : "make"
+
+        List arguments = []
+        if (project.getProperty("gst_uninstalled_core") == "true") {
+            arguments << "make"
+        }
+        arguments << "uninstall"
+        args arguments
         environment (configEnv())
         ignoreExitValue true
     }
 
-    def dependencyNames = getProperties(project, "", "configure_deps")
-    dependencyNames.each { String dependency ->
-        configure.dependsOn{":${dependency}:install"}
+    install.finalizedBy removeLaFiles
+    configure.enabled = !checkDisabled(it.name)
+    make.enabled = !checkDisabled(it.name)
+    install.enabled = !checkDisabled(it.name)
+    clean.enabled = !checkDisabled(it.name)
+    removeLaFiles.enabled = (project.getProperty("gst_uninstalled_core") == "true")
+
+    if (!project.hasProperty('skipdeps')) {
+        def dependencyNames = getProperties(project, "", "configure_deps")
+        dependencyNames.each { String dependency ->
+            configure.dependsOn{":${dependency}:install"}
+            configure.mustRunAfter{":${dependency}:removeLaFiles"}
+        }
     }
 }
 

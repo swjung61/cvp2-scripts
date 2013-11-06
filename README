@@ -10,9 +10,14 @@ CVP2 Gradle build script configuration:
 
 The root gradle.properties file stores directory settings used by the build scripts:
  - base_path: is a base directory relative to the $HOME directory
- - source_dirname: a subdirectory of base_path where components will be extracted or Git cloned and built.
- - install_dirname: a subdirectory of base_path where components will be installed.
+ - source_dirname: a subdirectory of base_path where components will be extracted or Git cloned and built
+ - install_dirname: a subdirectory of base_path where components will be installed
  - Default CableLabs maven credentials (read-only user)
+ - gst_uninstalled_core: set to true if using gstreamer components from the gst uninstalled environment
+ - gst_uninstalled_dlnasrc: set to true if using gst-plugins-dlnasrc from the gst uninstalled environment
+ - gst_uninstalled_dtcpip: set to true if using gst-plugins-dtcpip from the gst uninstalled environment
+
+Building with gst_uninstalled_core=true will also delete .la files from the install directory to deal with libtool linking issues against libraries not present in the libdir location specified by the .la file (see post_install_remove_la_files in each project).
 
 The 'external' subproject builds tarball-installable components retrieved from the CableLabs maven repository.  The external  gradle.properties file stores the specific versions of those individual components which will be downloaded from the CableLabs maven repository.
 
