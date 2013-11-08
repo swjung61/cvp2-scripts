@@ -68,10 +68,10 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
 "git@bitbucket.org:cvp2ri/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala --with-media-engine=odid"
-"git@bitbucket.org:cvp2ri/dleyna-core.git"            "$default_branch" ""
-"git@bitbucket.org:cvp2ri/dleyna-server.git"          "$default_branch" "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
-"git@bitbucket.org:cvp2ri/dleyna-connector-dbus.git"  "$default_branch" ""
+"git@github.com:cablelabs/dleyna-core.git"            "$default_branch" ""
+"git@github.com:cablelabs/dleyna-server.git"          "$default_branch" "--enable-never-quit"
+"git@github.com:cablelabs/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
+"git@github.com:cablelabs/dleyna-connector-dbus.git"  "$default_branch" ""
 "git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
 
