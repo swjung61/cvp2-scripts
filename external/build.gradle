@@ -238,13 +238,18 @@ configurations.tarFiles.dependencies.each { Dependency dep ->
     tasks['extract' + dep.name].onlyIf {!new File("${full_base_path}/${source_dirname}/${dep.name}/${dep.name}-${dep.version}").exists()}
 }
 
-buildOrder.eachWithIndex() {entry, i -> 
-    if (i > 0) {
-        def priorEntry = buildOrder[i - 1]
-        tasks['configure' + entry].dependsOn 
+if (!project.hasProperty('skipdeps')) {
+    buildOrder.eachWithIndex() {entry, i -> 
+        if (i > 0) {
+            def priorEntry = buildOrder[i - 1]
+            tasks['configure' + entry].dependsOn 
 		{'install' + priorEntry}
-        tasks['clean' + priorEntry].mustRunAfter{'clean' + entry}
-        tasks['uninstall' + priorEntry].mustRunAfter{'uninstall' + entry}
+            tasks['clean' + priorEntry].mustRunAfter{'clean' + entry}
+            tasks['uninstall' + priorEntry].mustRunAfter{'uninstall' + entry}
+        }
     }
 }
+
+//pkg-config won't install twice without an error - must be uninstalled first
+tasks['configurepkg-config'].dependsOn{'uninstallpkg-config'}
 
