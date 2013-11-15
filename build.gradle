@@ -142,6 +142,9 @@ task generateEnvSetup << {
         entries.each {
             f.append('export ' + it.key + '="' + it.value + '"' + System.getProperty("line.separator"))
         }
+        println "Generated env setup file: " + f + " - to use, source the file"
+    } else { 
+        println "The env setup file already exists at: " + f + " - not generating"
     }
 }
 
