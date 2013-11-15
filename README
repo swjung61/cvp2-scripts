@@ -6,6 +6,12 @@ If Gradle is installed manually, the 'gradle' command can be used instead of the
 
 Components built from tarballs (not from Git) are stored in the CableLabs Maven repository.  A set of default read-only credentials are provided in the default gradle.properties file. Non-read-only credentials are only needed once the script has been updated to support publishing of components to Maven and you are going to publish a component update via the Gradle script.  Instructions for specifying your own credentials are provided below.
 
+Initial Setup:
+
+NOTE: The Gradle Git plugin does not successfully clone repositories if your ssh keys are password protected.  Ensure the private key you use with both github.com and bitbucket.org are not password protected, and update the $HOME/.ssh/config github.com and bitbucket.org entries to reference the non-password-protected key.
+
+Ensure bitbucket.org and github.com are added to known_hosts by ssh-ing to each host and accepting the prompt to add the host entry to known_hosts.
+
 CVP2 Gradle build script configuration:
 
 The root gradle.properties file stores directory settings used by the build scripts:

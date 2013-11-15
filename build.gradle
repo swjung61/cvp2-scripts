@@ -160,7 +160,7 @@ configure(subprojects.findAll {it.name != 'external'}) {
         println "Not building ${project.name}"
     } else {
         if (!new File("${gitDependenciesDir}/${project.name}").exists())     {
-            println "Retrieving ${checkout_url} branch: ${checkout_branch} into ${gitDependenciesDir}/${project.name}"
+            println "Adding ${project.name} Git dependency - will clone git remote: ${checkout_url} branch: ${checkout_branch} into ${gitDependenciesDir}/${project.name}"
             println ""
             dependencies {
                 rootProject.dependencies.git("com.cablelabs.cvp2:${project.name}:${checkout_branch}").ext.git = "${checkout_url}"
