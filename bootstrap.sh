@@ -67,7 +67,7 @@ cvp2_repos=(
 "git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
 "git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
-"git@github.com:cablelabs/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala --with-media-engine=odid"
+"git@github.com:cablelabs/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
 "git@github.com:cablelabs/dleyna-core.git"            "$default_branch" ""
 "git@github.com:cablelabs/dleyna-server.git"          "$default_branch" "--enable-never-quit"
 "git@github.com:cablelabs/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
