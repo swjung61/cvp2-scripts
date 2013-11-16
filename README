@@ -8,6 +8,8 @@ Components built from tarballs (not from Git) are stored in the CableLabs Maven 
 
 Initial Setup:
 
+A Java virtual machine must be installed in order to run the gradle build scripts.
+
 NOTE: The Gradle Git plugin does not successfully clone repositories if your ssh keys are password protected.  Ensure the private key you use with both github.com and bitbucket.org are not password protected, and update the $HOME/.ssh/config github.com and bitbucket.org entries to reference the non-password-protected key.
 
 Ensure bitbucket.org and github.com are added to known_hosts by ssh-ing to each host and accepting the prompt to add the host entry to known_hosts.
