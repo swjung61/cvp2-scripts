@@ -63,16 +63,16 @@ cvp2_repos=(
 "git://git.gnome.org/vala"                            "b05fa3325" ""
 "git://git.gnome.org/valadoc"                         "98e3eb820" ""
 "git://git.gnome.org/gupnp-vala"                      "gupnp-vala-0.10.5-real" ""
-"git@bitbucket.org:cvp2ri/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
-"git@bitbucket.org:cvp2ri/gupnp.git"                  "$default_branch" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-av.git"               "$default_branch" "--enable-introspection"
-"git@bitbucket.org:cvp2ri/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
+"git@github.com:cablelabs/gssdp.git"                  "$default_branch" "--enable-introspection --without-gtk"
+"git@github.com:cablelabs/gupnp.git"                  "$default_branch" "--enable-introspection"
+"git@github.com:cablelabs/gupnp-av.git"               "$default_branch" "--enable-introspection"
+"git@github.com:cablelabs/gupnp-dlna.git"             "$default_branch" "--enable-introspection --enable-gstreamer-metadata-backend"
 "git@github.com:cablelabs/rygel.git"                  "$default_branch" "--disable-tracker-plugin --enable-gst-launch-plugin --enable-vala"
 "git@github.com:cablelabs/dleyna-core.git"            "$default_branch" ""
 "git@github.com:cablelabs/dleyna-server.git"          "$default_branch" "--enable-never-quit"
 "git@github.com:cablelabs/dleyna-renderer.git"        "$default_branch" "--enable-never-quit"
 "git@github.com:cablelabs/dleyna-connector-dbus.git"  "$default_branch" ""
-"git@bitbucket.org:cvp2ri/cvp2-xdmr-controller.git"   "$default_branch" ""
+"git@github.com:cablelabs/cvp2-xdmr-controller.git"   "$default_branch" ""
 )
 
 # TODO: Move Vala to the tarball list when 0.23 is released (so we don't have to have valac to compile valac)
