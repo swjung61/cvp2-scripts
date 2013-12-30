@@ -23,6 +23,7 @@ prerequisite_packages=(
 "yasm"
 "cvs"
 "valac"
+"traceroute"
 )
 
 # TODO: Remove valac from this list when Vala 0.23 is released
