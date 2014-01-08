@@ -58,8 +58,6 @@ cvp2_repos=(
 "git@github.com:cablelabs/gst-plugins-good.git"       "ruih/master" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-bad.git"        "ruih/master" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git@github.com:cablelabs/gst-plugins-ugly.git"       "ruih/master" "--enable-introspection --disable-examples --enable-gtk-doc=no"
-"git@github.com:cablelabs/gst-plugins-dlnasrc.git"    "master" ""
-"git@github.com:cablelabs/gst-plugins-dtcpip.git"     "master" ""
 "git@github.com:cablelabs/gst-libav.git"              "ruih/master" "--enable-introspection --disable-examples --enable-gtk-doc=no"
 "git://git.gnome.org/vala"                            "b05fa3325" ""
 "git://git.gnome.org/valadoc"                         "98e3eb820" ""
