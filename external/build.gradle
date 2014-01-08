@@ -67,32 +67,61 @@ dependencies {
 //libgmp -required by nettle when built
 //libnettle - required by gnutls
 
-List packageDependencies = [
-"libffi-dev",
-"flex",
-"bison",
-"python-dev",
-"gtk-doc-tools",
-"util-linux",
-"git",
-"g++",
-"libxml-parser-perl",
-"libx11-dev",
-"cvs",
-"yasm",
-"graphviz",
-"graphviz-dev",
-"uuid-dev",
-"libdbus-1-dev",
-"libasound2-dev",
-"libgmp10",
-"libnettle4",
-"libgnutls-dev",
-"gnome-common",
-"intltool",
-"gettext",
-"libncurses-dev",
-"valac"
+Map packageDependencies = [
+    "apt-get": [
+        "libffi-dev",
+        "flex",
+        "bison",
+        "python-dev",
+        "gtk-doc-tools",
+        "util-linux",
+        "git",
+        "g++",
+        "libxml-parser-perl",
+        "libx11-dev",
+        "cvs",
+        "yasm",
+        "graphviz",
+        "graphviz-dev",
+        "uuid-dev",
+        "libdbus-1-dev",
+        "libasound2-dev",
+        "libgmp10",
+        "libnettle4",
+        "libgnutls-dev",
+        "gnome-common",
+        "intltool",
+        "gettext",
+        "libncurses-dev",
+        "valac"
+    ],
+    "yum": [
+        "libffi-devel",
+        "flex",
+        "bison",
+        "python-devel",
+        "gtk-doc",
+        "util-linux",
+        "git",
+        "gcc-c++",
+        "perl-XML-Parser",
+        "libX11-devel",
+        "cvs",
+        "yasm",
+        "graphviz",
+        "graphviz-devel",
+        "uuid-devel",
+        "dbus-devel",
+        "alsa-lib-devel",
+        "gmp",
+        "nettle",
+        "gnutls-devel",
+        "gnome-common",
+        "intltool",
+        "gettext",
+        "ncurses-devel",
+        "vala"
+    ]
 ]
 
 //dependency order (above) is not preserved - specify build order explicitly
@@ -125,11 +154,31 @@ Closure configEnv = {
     return envVars
 }
 
-task showPkgCommand << { 
-    println "Run this command to install required packages (requires sudo access):"
+task showPkgCommand << {
+    String packageManager = null
+
+    /* try to find a package manager we know the dependencies for */
+    Runtime rt = Runtime.getRuntime()
+    for (p in packageDependencies ) {
+        try {
+            Process proc = rt.exec(p.key + " --version")
+            if (proc.waitFor() == 0) {
+                packageManager = p.key
+            }
+        } catch (IOException e) {
+            /* Java throws an IOException in some cases if the binary doesn't exist */
+        }
+    }
+
+    if (packageManager == null) {
+        print "Sorry, we couldn't find a package manager we understood on your machine. You may be able to find the dependencies based on the apt-get ones:"
+        packageManager = "apt-get"
+    } else {
+        println "Run this command to install required packages (requires sudo access):"
+    }
     println ""
-    print "sudo apt-get install "
-    packageDependencies.each() {print "$it "}
+    print "sudo " + packageManager + " install "
+    packageDependencies[packageManager].each() { print "$it " }
     println ""
     println ""
 }
