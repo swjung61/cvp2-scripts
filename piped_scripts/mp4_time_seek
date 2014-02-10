@@ -1,0 +1,189 @@
+#!/usr/bin/env perl
+
+# Copyright (C) 2014  Cable Television Laboratories, Inc.
+# 
+# Author: Doug Galligan <doug@sentosatech.com>
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CABLE TELEVISION LABORATORIES
+# INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+# TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+#
+# Script that works with the mp4clip application that edits mp4 containers
+# and places edit and free boxes in place in support of time seeks.  The
+# application provides an index file that can be used to update the bytestream
+# with corrected data for required time seek.
+# 
+# Usage: mp4_time_seek filename second_to_seek_to
+#
+
+use strict;
+
+open my $file, "<", $ARGV[0] or die($!);
+open my $index, '<', $ARGV[0] . ".index" or die($!) ;
+
+binmode $file;
+binmode STDOUT;
+
+
+my $chunk_size = 4096;
+
+#
+# This finds the correct entry in the index file.
+#
+while(my $line = <$index>)
+{
+    chomp $line;
+    
+    # First get the M or F entry type 
+    # Followed by a space and then a comma delimited list of fields.
+    # The fields are different based on entry type.
+    # However the first field is the maximun duration in seconds for 
+    # the entry.
+    my @record = split (" ", $line);
+    my @fields = split (",", $record[1]);
+    
+    if($fields[0] > $ARGV[1])
+    {
+        #
+        # The record will entry will be a M or F
+        #
+        process_movie (@fields) if $record[0] eq "M";
+        process_fragment (@fields) if $record[0] eq "F";
+        close $file;
+        close $index;
+        last;
+    }
+}
+
+# This is called if the time seek is within the moov section of the
+# mp4 file.  Replace the data in the offset at fields 3 and 8 with  
+# requested start second * the timescale found in fields 6 and 11
+# respectfuly .
+sub process_movie
+{
+    my @fields = @_;
+
+    my $start_byte = 0;
+    my $stop = -1;
+        
+    my $stop_hash = {
+                 $fields[2] => $fields[5], 
+                 $fields[7] => $fields[10] };
+                 
+    my @stops = sort { $a <=> $b } keys(%$stop_hash);
+    
+    my $print_calculation = 0;
+    my $bytes_to_read;
+
+    # Currently not supporting an ending time range request.
+    # Plays out the full file.
+    while(1)
+    {
+        if ($stop < $start_byte)
+        {
+            $stop = shift @stops;
+        }
+        
+        seek($file, $start_byte, 0) or die ($!);
+        
+        # Figure out how much to read, by default we will read a full
+        # chunk size (to min)
+        if (defined $stop && ($start_byte + $chunk_size) >= $stop)
+        {
+            $bytes_to_read = $stop - $start_byte;
+            $print_calculation = 1;
+        }
+        else
+        {
+            $bytes_to_read = $chunk_size;
+        }
+        
+        my $bytes_read = read($file, $_, $bytes_to_read);
+        
+        if ($bytes_read == 0)
+        {
+            # Nothing more to read in the file.
+            exit;
+        }
+        
+        print;
+        $start_byte += $bytes_read;
+        
+        # If we are at a point in the bytestream.  We do the calculation and write
+        # out a big-endian unsigned 32bit int skiping the data it replaces and 
+        # continuing on in the file.
+        if ($print_calculation)
+        {
+            print pack 'N', $ARGV[1] * $stop_hash->{$stop};
+            $start_byte += 4;
+            $print_calculation = 0;
+        }      
+    }        
+}
+
+sub process_fragment
+{
+    my @fields = @_;
+    
+    seek($file, $fields[3], 0) or die ($!);
+    my $numRead = read($file, my $packed_length, 4);
+    my $length = unpack 'N', $packed_length;
+    
+    my $start_byte = $fields[1];
+    my $stop = -1;
+        
+    my @stops = ($fields[3], $fields[5]);
+    
+    my $print_calculation = 0;
+    my $bytes_to_read;
+    
+    while(1)
+    {
+        if ($stop < $start_byte)
+        {
+            $stop = shift @stops;
+        }
+        
+        seek($file, $start_byte, 0) or die ($!);
+        
+        # How much to read
+        if (defined $stop && ($start_byte + $chunk_size) >= $stop)
+        {
+            $bytes_to_read = $stop - $start_byte;
+            $print_calculation = 1;
+        }
+        else
+        {
+            $bytes_to_read = $chunk_size;
+        }
+        
+        my $bytes_read = read($file, $_, $bytes_to_read);
+        
+        if ($bytes_read == 0)
+        {
+            exit;
+        }
+        
+        print;
+        $start_byte += $bytes_read;
+                
+        if ($print_calculation)
+        {
+            read($file, my $packed_offset, 4) or die ($!);
+            my $offset = unpack 'N', $packed_offset;
+            print STDERR "Offset = $offset\n";
+            print pack 'N', $fields[1] - $offset;
+            $start_byte += 4;
+            $print_calculation = 0;
+        }      
+    }          
+}

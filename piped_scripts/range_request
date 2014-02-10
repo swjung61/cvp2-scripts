@@ -1,0 +1,47 @@
+#!/usr/bin/perl
+
+# Copyright (C) 2014  Cable Television Laboratories, Inc.
+# 
+# Author: Doug Galligan <doug@sentosatech.com>
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CABLE TELEVISION LABORATORIES
+# INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+# TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+#
+# Script that prints a byte range from a file given the first byte to read and the 
+# number of bytes to read.
+# 
+# Usage range_request filename firstByte numBytes 
+
+open(FH, $ARGV[0]) or die($!);
+
+my $chunk_size = 4096;
+my $bytes_left = $ARGV[2];
+my $start_byte = $ARGV[1];
+
+while($bytes_left > 0)
+{
+    if($bytes_left < $chunk_size)
+    {
+        $chunk_size = $bytes_left;
+    }
+    seek(FH,$start_byte, 0) or die ($!);
+    my $bytes_read = read(FH,$_,$chunk_size);
+    if ($bytes_read == 0)
+    {
+        exit;
+    }
+    print;
+
+    $start_byte += $chunk_size;
+    $bytes_left -= $chunk_size;
+}

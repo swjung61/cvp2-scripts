@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Example script on controlling subprocesses, and demonstrating
+# the diverse set of content that can be generated.
+
+declare -a pid
+
+function kill_sub() {
+    echo killing $pid 1>&2
+    kill $pid
+    exit 0
+}
+
+trap kill_sub SIGHUP SIGTERM SIGINT
+
+# Simple sending a file to STDOUT
+#cat ~/media/MPEG_TS_NA_ISO/jag.ts &
+
+# Tuning and playing a live stream via a HDHomeRun.
+#hdhomerun_config 1018C5E7 set /tuner0/channel auto:9
+#hdhomerun_config 1018C5E7 save /tuner0 - &
+
+#hdhomerun_config 101A8A55 set /tuner0/channel 65
+#hdhomerun_config 101A8A55 save /tuner0 - &
+
+#
+# Remote screen display via DLNA
+#
+ffmpeg -f x11grab -s `xdpyinfo | grep 'dimensions:'|awk '{print $2}'` -r 25 -i :0.0 -f mpegts -strict experimental -y -sameq pipe: &
+
+# Capture pid of piped command to signal later
+pid=$!
+
+while (true) 
+do
+    sleep 10;
+done
