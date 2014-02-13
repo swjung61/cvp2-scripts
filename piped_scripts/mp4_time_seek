@@ -53,12 +53,6 @@ for (@index) {
 #
 my ($startLine, $endLine) = line_boundries(\@index, $startSecond, $endSecond);
 
-# Simple bounds checking
-if($startLine == -1 || $startLine > $endLine)
-{
-    exit 1;
-} 
-
 if($startLine == 0)
 {
     output_moov ($index[0]);
