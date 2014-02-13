@@ -22,92 +22,155 @@
 # application provides an index file that can be used to update the bytestream
 # with corrected data for required time seek.
 # 
-# Usage: mp4_time_seek filename second_to_seek_to
+# Usage: mp4_time_seek filename start_second end_second
 #
 
 use strict;
 
-open my $file, "<", $ARGV[0] or die($!);
-open my $index, '<', $ARGV[0] . ".index" or die($!) ;
+my $filename    = $ARGV[0];
+my $startSecond = $ARGV[1];
+my $endSecond   = $ARGV[2];
 
-binmode $file;
+open FILE, "<", $filename or die($!);
+
+open INDEX, '<', $filename . ".index" or die($!) ;
+chomp(my @index = <INDEX>);
+close INDEX;
+
+binmode FILE;
 binmode STDOUT;
-
 
 my $chunk_size = 4096;
 
+# Normalize data.
+# First field is space delimited for some reason, rest are comma.
+for (@index) {
+  s/ /,/g;
+}
+
 #
-# This finds the correct entry in the index file.
+# This finds the correct entries in the index file.
 #
-while(my $line = <$index>)
+my ($startLine, $endLine) = line_boundries(\@index, $startSecond, $endSecond);
+
+# Simple bounds checking
+if($startLine == -1 || $startLine > $endLine)
 {
-    chomp $line;
+    exit 1;
+} 
+
+if($startLine == 0)
+{
+    output_moov ($index[0]);
+}
+else
+{
+    # Capture first Ftyp offset to calculate all future offsets
+    my ($t, $d, $firstFtypOffset) = split (/,/, $index[$startLine]);
     
-    # First get the M or F entry type 
-    # Followed by a space and then a comma delimited list of fields.
-    # The fields are different based on entry type.
-    # However the first field is the maximun duration in seconds for 
-    # the entry.
-    my @record = split (" ", $line);
-    my @fields = split (",", $record[1]);
-    
-    if($fields[0] > $ARGV[1])
+    for my $i ($startLine .. $endLine)
     {
-        #
-        # The record will entry will be a M or F
-        #
-        process_movie (@fields) if $record[0] eq "M";
-        process_fragment (@fields) if $record[0] eq "F";
-        close $file;
-        close $index;
-        last;
+        my ($type, $time, $startByte, $t0, $firstOffset, $t1, $secondOffset) 
+        = split (/,/, $index[$i]);
+            
+        my $nextStartByte;
+                
+        # Look ahead for beginning of next section.  
+        # TODO : Currently a bounds bug here as we don't account
+        # for the ending byte if the current moof is the last moof
+        # in the index / file.
+        if ($i != $#index) 
+        {
+            ($type, $time, $nextStartByte) = split (/,/, $index[$i + 1]);
+        }
+        my @offsets = ($firstOffset, $secondOffset);
+        print STDERR "Processing Line $i of $endLine $startByte - " . ($nextStartByte - 1) . "\n";
+        output_moof($startByte, $nextStartByte - 1, $firstFtypOffset, \@offsets);
+        $i++;
     }
+}
+
+close FILE;
+
+# Given index, and start and end seconds, return zero based line 
+# numbers in index to use.
+sub line_boundries
+{
+    my ($idx, $startSec, $endSec) = @_;
+            
+    my $i = 0;
+    my $start = -1;
+    my $end = -1;
+    
+    for (@$idx)
+    {
+        # Find duration of line, field type has space instead of
+        # comma.
+        my @fields = split (/,/);
+
+        if($start == -1 && $fields[1] > $startSec)
+        {
+            $start = $i;
+        } 
+    
+        # End time seek range is optional
+        if(defined $endSec)
+        {
+            if ($end == -1 && $fields[1] > $endSec)
+            {
+                $end = $i;
+            }
+        }
+        $i++;
+    }
+    
+    return ($start, $end);
 }
 
 # This is called if the time seek is within the moov section of the
 # mp4 file.  Replace the data in the offset at fields 3 and 8 with  
 # requested start second * the timescale found in fields 6 and 11
-# respectfuly .
-sub process_movie
+# respectfuly.
+sub output_moov
 {
-    my @fields = @_;
-
-    my $start_byte = 0;
-    my $stop = -1;
-        
-    my $stop_hash = {
-                 $fields[2] => $fields[5], 
-                 $fields[7] => $fields[10] };
-                 
-    my @stops = sort { $a <=> $b } keys(%$stop_hash);
+    my @fields = split(/,/, @_[0]);
     
-    my $print_calculation = 0;
+    my $next_seek_to_byte = 0;
+    my $rewrite_pos = -1;
+        
+    my $rewrite_hash = {
+                 $fields[3] => $fields[6], 
+                 $fields[8] => $fields[11] };
+                 
+    my @rewrites = sort { $a <=> $b } keys(%$rewrite_hash);
+    
+    my $rewrite = 0;
     my $bytes_to_read;
 
     # Currently not supporting an ending time range request.
     # Plays out the full file.
     while(1)
     {
-        if ($stop < $start_byte)
+        if ($rewrite_pos < $next_seek_to_byte)
         {
-            $stop = shift @stops;
+            $rewrite_pos = shift @rewrites;
         }
         
-        seek($file, $start_byte, 0) or die ($!);
+        seek(FILE, $next_seek_to_byte, 0) or die ($!);
         
         # Figure out how much to read, by default we will read a full
         # chunk size (to min)
-        if (defined $stop && ($start_byte + $chunk_size) >= $stop)
+        if (defined $rewrite_pos && ($next_seek_to_byte + $chunk_size) >= $rewrite_pos)
         {
-            $bytes_to_read = $stop - $start_byte;
-            $print_calculation = 1;
+            $bytes_to_read = $rewrite_pos - $next_seek_to_byte;
+            $rewrite = 1;
         }
         else
         {
             $bytes_to_read = $chunk_size;
         }
         
-        my $bytes_read = read($file, $_, $bytes_to_read);
+        my $bytes_read = read(FILE, $_, $bytes_to_read);
         
         if ($bytes_read == 0)
         {
@@ -116,74 +179,86 @@ sub process_movie
         }
         
         print;
-        $start_byte += $bytes_read;
+        $next_seek_to_byte += $bytes_read;
         
         # If we are at a point in the bytestream.  We do the calculation and write
         # out a big-endian unsigned 32bit int skiping the data it replaces and 
-        # continuing on in the file.
-        if ($print_calculation)
+        # continuing on in the file.  64bit edit boxes would use Q>
+        if ($rewrite)
         {
-            print pack 'N', $ARGV[1] * $stop_hash->{$stop};
-            $start_byte += 4;
-            $print_calculation = 0;
+            print pack 'N', $ARGV[1] * $rewrite_hash->{$rewrite_pos};
+            $next_seek_to_byte += 4;
+            $rewrite = 0;
         }      
     }        
 }
 
-sub process_fragment
+#
+# Current status of this method is the following.  It will find and write out
+# the set of moofs that cover a time seek range.  It will edit the offsets in
+# each moof to account for the smaller file size.  It assumes a 64bit offset,
+# need to check if this is always the case or if 32bit ones are allowed per
+# spec.
+#
+sub output_moof
 {
-    my @fields = @_;
+    my ($start_byte, $end_byte, $firstFtypOffset, $rewrite_bytes) = @_;
     
-    seek($file, $fields[3], 0) or die ($!);
-    my $numRead = read($file, my $packed_length, 4);
-    my $length = unpack 'N', $packed_length;
+    my $rewrite_pos = -1;
+    my $rewrite = 0;
+    my @rewrites = @$rewrite_bytes;
     
-    my $start_byte = $fields[1];
-    my $stop = -1;
-        
-    my @stops = ($fields[3], $fields[5]);
+    my $next_byte_to_seek = $start_byte;
+    my $total_bytes_to_read = $end_byte - $start_byte;    
     
-    my $print_calculation = 0;
-    my $bytes_to_read;
-    
-    while(1)
+    my $total_bytes_read = 0;
+    while($total_bytes_read < $total_bytes_to_read)
     {
-        if ($stop < $start_byte)
+        my $bytes_to_read;
+
+        # We have passed current rewrite point
+        # Get next one if available.
+        if ($rewrite_pos < $next_byte_to_seek)
         {
-            $stop = shift @stops;
+            $rewrite_pos = shift @rewrites;
         }
         
-        seek($file, $start_byte, 0) or die ($!);
+        seek(FILE, $next_byte_to_seek, 0) or die ($!);
         
         # How much to read
-        if (defined $stop && ($start_byte + $chunk_size) >= $stop)
+        if (defined $rewrite_pos && 
+               ($next_byte_to_seek + $chunk_size) >= $rewrite_pos)
         {
-            $bytes_to_read = $stop - $start_byte;
-            $print_calculation = 1;
+            # Read partial chunk and set to rewrite at end.
+            $bytes_to_read = $rewrite_pos - $next_byte_to_seek;
+            $rewrite = 1;
+        }
+        elsif (($next_byte_to_seek + $chunk_size) > $end_byte)
+        {
+            $bytes_to_read = $total_bytes_to_read - $total_bytes_read;
         }
         else
         {
+            # Read full chunk or till end of bytes.
             $bytes_to_read = $chunk_size;
         }
         
-        my $bytes_read = read($file, $_, $bytes_to_read);
-        
-        if ($bytes_read == 0)
-        {
-            exit;
-        }
+        my $bytes_read = read(FILE, $_, $bytes_to_read);
+        $total_bytes_read += $bytes_read;
+        $next_byte_to_seek += $bytes_read;        
         
         print;
-        $start_byte += $bytes_read;
-                
-        if ($print_calculation)
-        {
-            read($file, my $packed_offset, 4) or die ($!);
-            my $offset = unpack 'N', $packed_offset;
-            print STDERR "Offset = $offset\n";
-            print pack 'N', $fields[1] - $offset;
-            $start_byte += 4;
-            $print_calculation = 0;
-        }      
-    }          
+
+        # Rewrite at this location and skip ahead
+        if ($rewrite)
+        { 
+            read(FILE, my $packed_offset, 8) or die ($!);
+            my $offset = unpack 'Q>', $packed_offset;
+            my $value = $offset - $firstFtypOffset;
+            print pack 'Q>', $value;
+            $next_byte_to_seek += 8;
+            $total_bytes_read += 8;
+            $rewrite = 0;
+        }
+    }
 }
