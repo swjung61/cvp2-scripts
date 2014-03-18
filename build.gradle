@@ -104,6 +104,7 @@ Closure configEnv = {
     def ldLibraryPath="${destination}/lib"
     def xdgDataDirs = "${destination}/share" 
     def envVars = [:]
+    envVars['CVP2_ROOT'] = "${destination}"
     envVars['PKG_CONFIG_PATH'] = "${System.env.PKG_CONFIG_PATH}" != "null" ? "${System.env.PKG_CONFIG_PATH}:${pkgConfigPath}" : "${pkgConfigPath}"
     envVars['ACLOCAL_FLAGS'] = "-I /usr/share/aclocal -I ${destination}/share/aclocal"
     envVars['CFLAGS'] = "-I${destination}/include"
